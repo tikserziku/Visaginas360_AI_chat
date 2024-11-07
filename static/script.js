@@ -75,9 +75,92 @@ document.addEventListener('DOMContentLoaded', () => {
         currentRecognitionLang = translations.lang; // Update recognition language
     }
 
-    // ... (formatMessage, addMessage, sendMessage, showLoading, hideLoading)
 
-    function startVoiceRecognition() {
+
+    // Message Handling Functions
+    const formatMessage = (text) => {
+        if (!text) return '';
+        
+        // Заменяем маркеры списка
+        text = text.replace(/^- /gm, '• ');
+        text = text.replace(/^\d+\. /gm, (match) => `\n${match}`);
+        
+        // Форматируем абзацы
+        return text.split('\n').filter(line => line.trim()).join('\n');
+    };
+
+    const addMessage = (text, isUser = false) => {
+        if (!text) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+
+        // Форматируем текст только для ответов бота
+        const formattedText = isUser ? text : formatMessage(text);
+        
+        // Создаём параграфы
+        formattedText.split('\n').forEach(line => {
+            if (line.trim()) {
+                const p = document.createElement('p');
+                p.textContent = line;
+                messageDiv.appendChild(p);
+            }
+        });
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    };
+
+    // API Communication
+    const sendMessage = async (text) => {
+        if (!text.trim()) return;
+        
+        try {
+            showLoading();
+            
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            
+            if (data.reply) {
+                addMessage(data.reply, false);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('Произошла ошибка. Пожалуйста, попробуйте еще раз.', false);
+        } finally {
+            hideLoading();
+        }
+    };
+
+    // Loading Indicator
+    const showLoading = () => loadingIndicator.style.display = 'flex';
+    const hideLoading = () => loadingIndicator.style.display = 'none';
+
+    // Voice Modal Controls
+    const showVoiceModal = () => {
+        voiceModal.classList.add('active');
+        voiceText.textContent = 'Click to speak';
+    };
+
+    const hideVoiceModal = () => {
+        voiceModal.classList.remove('active');
+        if (isRecording && recognition) {
+            recognition.stop();
+        }
+    };
+
+    // В функции где инициализируется распознавание речи, обновите настройки:
+
+        function startVoiceRecognition() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             voiceButton.style.display = 'none';
             console.log('Speech Recognition API is not supported');
@@ -116,10 +199,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
         recognition.lang = currentRecognitionLang;
         recognition.start();
+    } else {
+                recognition.stop();
+            }
+        });
+    } else {
+        voiceButton.style.display = 'none';
+        console.log('Speech Recognition API is not supported');
     }
 
-    // Voice Button Event Listeners
-    // ... (no changes in voice button event listeners)
+    // Menu Controls
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
 
-    // ... (rest of the code - Menu Controls, Text Input Handlers, Global Event Listeners - no changes)
+    // Text Input Handlers
+    sendButton.addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        if (message) {
+            addMessage(message, true);
+            sendMessage(message);
+            messageInput.value = '';
+        }
+    });
+
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
+    });
+
+    // Global Event Listeners
+    document.addEventListener('click', (e) => {
+        // Закрываем меню при клике вне его
+        if (!dropdownMenu.contains(e.target) && !menuButton.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+        }
+        // Закрываем модальное окно при клике вне его
+        if (e.target === voiceModal) {
+            hideVoiceModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideVoiceModal();
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    
+    
+    // Welcome Message
+    setTimeout(() => {
+        addMessage('Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?', false);
+    }, 500);
 });
