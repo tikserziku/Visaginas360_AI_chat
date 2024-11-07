@@ -19,23 +19,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const helpLink = document.querySelector('[href="#help"]');
     const languageButtons = document.querySelectorAll('.lang-btn');
 
-    
-    let currentLanguage = 'lt'; // Начальный язык
     let recognition = null;
     let isRecording = false;
     let translations = {};
-    let currentRecognitionLang = 'lt-LT'; // Default to Lithuanian
+    let currentLanguage = {
+        code: 'lt',      // для переводов интерфейса
+        speech: 'lt-LT'  // для распознавания речи
+    };
 
-    async function loadTranslations() {
-        const browserLang = navigator.language.toLowerCase();
-        let lang = 'en';
-        
-        if (browserLang.startsWith('lt')) {
-            lang = 'lt';
-        } else if (browserLang.startsWith('ru')) {
-            lang = 'ru';
+    function updateInterfaceLanguage() {
+        messageInput.placeholder = translations.placeholder;
+        sendButton.textContent = translations.send;
+        voiceText.textContent = translations.voice_modal_text;
+        if (loadingIndicator.querySelector('span')) {
+            loadingIndicator.querySelector('span').textContent = translations.loading;
         }
-        
+
+        if (brandName) brandName.textContent = translations.brand_name;
+        if (aboutLink) aboutLink.textContent = translations.about;
+        if (settingsLink) settingsLink.textContent = translations.settings;
+        if (helpLink) helpLink.textContent = translations.help;
+
+        // Очищаем чат и добавляем приветственное сообщение только при первой загрузке
+        if (chatMessages.children.length === 0) {
+            addMessage(translations.welcome_message, false);
+        }
+    }
+
+    async function loadTranslations(lang = 'lt') {
         const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
 
         try {
@@ -66,53 +77,42 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Функция обновления активного языка
-function updateActiveLanguage(lang) {
-    currentLanguage = lang;
-    languageButtons.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
-    });
-    
-    // Обновляем язык распознавания речи
-    if (recognition) {
-        switch(lang) {
+    function updateLanguage(langCode) {
+        currentLanguage.code = langCode;
+        
+        // Обновляем язык распознавания речи
+        switch(langCode) {
             case 'lt':
-                recognition.lang = 'lt-LT';
+                currentLanguage.speech = 'lt-LT';
                 break;
             case 'ru':
-                recognition.lang = 'ru-RU';
+                currentLanguage.speech = 'ru-RU';
                 break;
             case 'en':
-                recognition.lang = 'en-US';
+                currentLanguage.speech = 'en-US';
                 break;
         }
-    }
-}
 
-// Добавляем обработчики для кнопок
-languageButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-        updateActiveLanguage(btn.dataset.lang);
+        // Обновляем активную кнопку
+        languageButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === langCode);
+        });
+
+        // Обновляем язык распознавания если оно инициализировано
+        if (recognition) {
+            recognition.lang = currentLanguage.speech;
+        }
+
+        // Загружаем переводы для нового языка
+        loadTranslations(langCode);
+    }
+
+    // Обработчики кнопок языка
+    languageButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            updateLanguage(btn.dataset.lang);
+        });
     });
-});
-
-// Устанавливаем начальный активный язык
-updateActiveLanguage('lt');
-    
-    function updateInterfaceLanguage() {
-        messageInput.placeholder = translations.placeholder;
-        sendButton.textContent = translations.send;
-        voiceText.textContent = translations.voice_modal_text;
-        loadingIndicator.querySelector('span').textContent = translations.loading;
-
-        if (brandName) brandName.textContent = translations.brand_name;
-        if (aboutLink) aboutLink.textContent = translations.about;
-        if (settingsLink) settingsLink.textContent = translations.settings;
-        if (helpLink) helpLink.textContent = translations.help;
-
-        chatMessages.innerHTML = '';
-        addMessage(translations.welcome_message, false);
-    }
 
     function initSpeechRecognition() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -126,7 +126,7 @@ updateActiveLanguage('lt');
         
         recognition.continuous = false;
         recognition.interimResults = false;
-        recognition.lang = currentRecognitionLang;
+        recognition.lang = currentLanguage.speech;
 
         recognition.onstart = () => {
             isRecording = true;
@@ -159,15 +159,14 @@ updateActiveLanguage('lt');
         return true;
     }
 
-    // Message Handling Functions
-    const formatMessage = (text) => {
+    function formatMessage(text) {
         if (!text) return '';
         text = text.replace(/^- /gm, '• ');
         text = text.replace(/^\d+\. /gm, (match) => `\n${match}`);
         return text.split('\n').filter(line => line.trim()).join('\n');
-    };
+    }
 
-    const addMessage = (text, isUser = false) => {
+    function addMessage(text, isUser = false) {
         if (!text) return;
 
         const messageDiv = document.createElement('div');
@@ -178,16 +177,16 @@ updateActiveLanguage('lt');
         formattedText.split('\n').forEach(line => {
             if (line.trim()) {
                 const p = document.createElement('p');
-                p.innerHTML = line; // Changed to innerHTML to support markdown links
+                p.innerHTML = line;
                 messageDiv.appendChild(p);
             }
         });
 
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-    };
+    }
 
-    const sendMessage = async (text) => {
+    async function sendMessage(text) {
         if (!text.trim()) return;
         
         try {
@@ -214,23 +213,27 @@ updateActiveLanguage('lt');
         } finally {
             hideLoading();
         }
-    };
+    }
 
-    // UI Controls
-    const showLoading = () => loadingIndicator.style.display = 'flex';
-    const hideLoading = () => loadingIndicator.style.display = 'none';
+    function showLoading() {
+        loadingIndicator.style.display = 'flex';
+    }
 
-    const showVoiceModal = () => {
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+    }
+
+    function showVoiceModal() {
         voiceModal.classList.add('active');
         voiceText.textContent = translations.voice_modal_text;
-    };
+    }
 
-    const hideVoiceModal = () => {
+    function hideVoiceModal() {
         voiceModal.classList.remove('active');
         if (isRecording && recognition) {
             recognition.stop();
         }
-    };
+    }
 
     // Event Listeners
     voiceButton.addEventListener('click', () => {
@@ -248,7 +251,7 @@ updateActiveLanguage('lt');
         }
         
         if (!isRecording) {
-            recognition.lang = currentRecognitionLang;
+            recognition.lang = currentLanguage.speech;
             recognition.start();
         } else {
             recognition.stop();
@@ -271,29 +274,12 @@ updateActiveLanguage('lt');
         }
     });
 
-    // Language Switching Button
-    const languageButton = document.createElement('button');
-    languageButton.className = 'input-button language-button';
-    languageButton.textContent = '🌐';
-    languageButton.title = 'Switch language';
-    
-    languageButton.addEventListener('click', () => {
-        const languages = ['lt-LT', 'ru-RU', 'en-US'];
-        const currentIndex = languages.indexOf(currentRecognitionLang);
-        currentRecognitionLang = languages[(currentIndex + 1) % languages.length];
-        
-        const langNames = { 'lt-LT': 'LT', 'ru-RU': 'RU', 'en-US': 'EN' };
-        languageButton.setAttribute('title', `Current: ${langNames[currentRecognitionLang]}`);
-        
-        if (recognition) {
-            recognition.lang = currentRecognitionLang;
-        }
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownMenu?.classList.toggle('show');
     });
 
-    // Add language button to UI
-    voiceButton.parentNode.insertBefore(languageButton, voiceButton);
-
-    // Global click handler
+    // Global event listeners
     document.addEventListener('click', (e) => {
         if (dropdownMenu && !dropdownMenu.contains(e.target) && !menuButton.contains(e.target)) {
             dropdownMenu.classList.remove('show');
@@ -313,5 +299,5 @@ updateActiveLanguage('lt');
     });
 
     // Initialize
-    loadTranslations();
+    updateLanguage('lt');
 });
