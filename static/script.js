@@ -123,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+// Обновите часть с голосовым вводом в script.js
     // Voice Recognition Setup
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
@@ -142,7 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
         recognition.onresult = (event) => {
             const text = event.results[0][0].transcript;
             voiceText.textContent = text;
-            sendMessage(text, true);
+            // Скрываем модальное окно
+            voiceModal.style.display = 'none';
+            // Добавляем сообщение в чат и отправляем на сервер
+            addMessage(text, true);
+            sendMessage(text);
         };
 
         recognition.onerror = (event) => {
@@ -160,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Voice Modal Controls
         voiceButton.addEventListener('click', () => {
+            // Показываем модальное окно только при клике на кнопку микрофона
             voiceModal.style.display = 'flex';
             voiceText.textContent = 'Click to speak';
         });
@@ -188,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
