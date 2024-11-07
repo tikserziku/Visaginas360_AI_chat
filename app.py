@@ -22,7 +22,7 @@ limiter = Limiter(
 
 # Инициализация Claude API
 anthropic_client = anthropic.Anthropic(
-    api_key=os.environ.get('ANTHROPIC_API_KEY')  # Исправлено имя переменной окружения
+    api_key=os.environ.get('ANTHROPIC_API_KEY')  # Исправлено имя переменной
 )
 
 def get_invitation_message(language):
@@ -83,19 +83,18 @@ def detect_language(text):
     ]
     has_ru_markers = any(marker in normalized_text for marker in ru_markers)
 
+    # Проверяем английские слова-маркеры
+    en_markers = ['hello', 'hi', 'thanks', 'please', 'artificial', 'intelligence', 'learn', 'system']
+    has_en_markers = any(marker in normalized_text for marker in en_markers)
+
     # Улучшенное определение языка
     if lt_count > 0 or has_lt_markers:
         return "lt"
     elif ru_count > 0 or has_ru_markers:
         return "ru"
-    
-    # Проверяем английские слова-маркеры
-    en_markers = ['hello', 'hi', 'thanks', 'please', 'artificial', 'intelligence']
-    if any(marker in normalized_text for marker in en_markers):
+    elif has_en_markers:
         return "en"
-    
-    # По умолчанию возвращаем английский
-    return "en"
+    return "en"  # Default to English
 
 def get_ai_response(text):
     try:
