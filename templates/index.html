@@ -13,43 +13,12 @@
         <button class="menu-button" id="menuButton">
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Menu">
         </button>
-        <span class="brand-name">VISAGINAS360 AI</span>
-        <div class="dropdown-menu" id="dropdownMenu">
-            <a href="#about">О проекте</a>
-            <a href="#settings">Настройки</a>
-            <a href="#help">Помощь</a>
-        </div>
-    </nav>
+        <span class="brand-name"></span>  </nav>
 
     <main class="chat-container">
         <div id="chat-messages"></div>
         <div class="input-container">
             <button id="voice-button" class="input-button">
-                <span>🎤</span>
-            </button>
-            <input type="text" id="message-input" placeholder="Введите ваше сообщение...">
-            <button id="send-button" class="input-button">
-                <span>📤</span>
-            </button>
-        </div>
-    </main>
-
-    <div id="voice-modal" class="modal">
-    <div class="modal-content voice-compact">
-        <span class="close">&times;</span>
-        <button id="start-voice" class="voice-circle-button">
-            <span class="mic-icon">🎤</span>
-            <span class="recording-indicator"></span>
-        </button>
-        <div id="voice-text" class="voice-text"></div>
-    </div>
-</div>
-
-    <div id="loading-indicator">
-        <div class="spinner"></div>
-        <span>Обработка...</span>
-    </div>
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
+                <span>🎤</span> </button> <input type="text" id="message-input" placeholder="">
+            <button id="send-button" class="input-button"></button> </div> </main> <div id="voice-modal" class="modal"> <div class="modal-content voice-compact"> <span class="close">×</span> <button id="start-voice" class="voice-circle-button"> <span class="mic-icon">🎤</span> <span class="recording-indicator"></span> </button> <div id="voice-text" class="voice-text"></div> </div> </div> <div id="loading-indicator"> <div class="spinner"></div> <span></span> </div> <script src="{{ url_for('static', filename='script.js') }}"></script> </body>
 </html>
