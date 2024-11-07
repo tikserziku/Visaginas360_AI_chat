@@ -14,11 +14,21 @@
             <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Menu">
         </button>
         <span class="brand-name">VISAGINAS360 AI</span>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <a href="#about">О проекте</a>
+            <a href="#settings">Настройки</a>
+            <a href="#help">Помощь</a>
+        </div>
     </nav>
-
+    
     <main class="chat-container">
         <div id="chat-messages"></div>
         <div class="input-container">
+            <div class="language-selector">
+                <button class="lang-btn" data-lang="lt">LT</button>
+                <button class="lang-btn" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
             <button id="voice-button" class="input-button">
                 <span>🎤</span>
             </button>
