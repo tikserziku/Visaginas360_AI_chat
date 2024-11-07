@@ -30,8 +30,8 @@
 
         <div class="input-container">  <!-- Только один блок input-container -->
             <button id="lang-toggle" class="input-button language-button" aria-label="Change language">
-                <span>LT</span> </button>
-
+                <span>LT</span>
+            </button>
             <button id="voice-button" class="input-button" aria-label="Start voice input">
                 <span aria-hidden="true">🎤</span>
             </button>
@@ -44,8 +44,8 @@
             <button id="send-button" class="input-button" aria-label="Send message">
                 <span aria-hidden="true">📤</span>
             </button>
-        </div>
-    </main>
+        </div>  </main>
+
 
     <div id="voice-modal" class="modal" role="dialog" aria-label="Voice input" aria-modal="true" hidden>
         <div class="modal-content voice-compact">
@@ -62,6 +62,7 @@
         <div class="spinner" aria-hidden="true"></div>
         <span>Processing...</span>
     </div>
+
 
     <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
