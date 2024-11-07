@@ -1,0 +1,15 @@
+{
+  "placeholder": "Įveskite savo žinutę...",
+  "send": "Siųsti",
+  "voice_modal_text": "Paspauskite, kad kalbėtumėte",
+  "voice_listening": "Klausoma...",
+  "voice_error": "Klaida. Prašome bandyti dar kartą.",
+  "loading": "Apdorojama...",
+  "welcome_message": "Sveiki! Aš esu jūsų virtualus asistentas, padedantis mokytis apie dirbtinį intelektą. Kaip galiu jums padėti šiandien?",
+  "error_message": "Įvyko klaida. Prašome bandyti dar kartą.",
+  "about": "Apie projektą",
+  "settings": "Nustatymai",
+  "help": "Pagalba",
+  "brand_name": "VISAGINAS360 AI",
+  "lang": "lt-LT"
+}
