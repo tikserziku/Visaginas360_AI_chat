@@ -27,16 +27,11 @@
     
     <main class="chat-container" role="main">
         <div id="chat-messages" role="log" aria-live="polite" aria-atomic="false"></div>
-        <div class="input-container">
+
+        <div class="input-container">  <!-- Только один блок input-container -->
             <button id="lang-toggle" class="input-button language-button" aria-label="Change language">
-                <span>LT</span>
-            </button>
-            <button id="voice-button" class="input-button">
-                <span>🎤</span>
-            </button>
-            <input type="text" id="message-input" placeholder="Type your message...">
-            <button id="send-button" class="input-button">📤</button>
-        </div>
+                <span>LT</span> </button>
+
             <button id="voice-button" class="input-button" aria-label="Start voice input">
                 <span aria-hidden="true">🎤</span>
             </button>
@@ -52,19 +47,10 @@
         </div>
     </main>
 
-    <div id="voice-modal" 
-         class="modal" 
-         role="dialog" 
-         aria-label="Voice input"
-         aria-modal="true"
-         hidden>
+    <div id="voice-modal" class="modal" role="dialog" aria-label="Voice input" aria-modal="true" hidden>
         <div class="modal-content voice-compact">
             <button class="close" aria-label="Close voice input">×</button>
-            <button id="start-voice" 
-                    class="voice-circle-button" 
-                    role="button" 
-                    aria-label="Start voice recording"
-                    aria-pressed="false">
+            <button id="start-voice" class="voice-circle-button" role="button" aria-label="Start voice recording" aria-pressed="false">
                 <span class="mic-icon" aria-hidden="true">🎤</span>
                 <span class="recording-indicator" aria-hidden="true"></span>
             </button>
@@ -72,10 +58,7 @@
         </div>
     </div>
 
-    <div id="loading-indicator" 
-         role="alert" 
-         aria-busy="true"
-         hidden>
+    <div id="loading-indicator" role="alert" aria-busy="true" hidden>
         <div class="spinner" aria-hidden="true"></div>
         <span>Processing...</span>
     </div>
