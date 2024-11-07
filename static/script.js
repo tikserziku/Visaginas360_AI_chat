@@ -26,18 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTranslations(); // Call loadTranslations to initiate localization
 
     async function loadTranslations() {
-        const lang = navigator.language.startsWith('ru') ? 'ru' : 'en';
-        const url = `/static/locales/translations${lang === 'en' ? '_en' : ''}.json`;
+    const lang = navigator.language.startsWith('ru') ? 'ru' : 'en';
+    const url = `/static/locales/translations${lang === 'en' ? '_en' : ''}.json`;
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            translations = await response.json();
-            updateInterfaceLanguage();
-        } catch (error) {
-            console.error('Error loading translations:', error);
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
+        }
+        translations = await response.json();
+    } catch (error) {
+        console.error('Error loading translations:', error);
             translations = {  // Default Russian translations
                 "placeholder": "Введите ваше сообщение...",
                 "send": "📤",
@@ -53,9 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 "brand_name": "VISAGINAS360 AI"
 
             };
-            updateInterfaceLanguage();
-        }
+    } finally {
+        // Update the interface and HTML lang attribute regardless of success or failure
+        updateInterfaceLanguage();
+        document.documentElement.lang = lang; // Set the HTML lang attribute
     }
+}
 
 
     function updateInterfaceLanguage() {
