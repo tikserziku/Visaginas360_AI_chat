@@ -27,6 +27,76 @@ document.addEventListener('DOMContentLoaded', () => {
         speech: 'lt-LT'  // для распознавания речи
     };
 
+    // Функции обработчики голосового ввода
+    function handleVoiceButtonClick(e) {
+        if (e?.type === 'touchstart') {
+            e.preventDefault();
+        }
+        showVoiceModal();
+        if (!recognition) {
+            initSpeechRecognition();
+        }
+    }
+
+    function handleStartVoiceClick(e) {
+        if (e?.type === 'touchstart') {
+            e.preventDefault();
+        }
+        
+        if (!recognition && !initSpeechRecognition()) {
+            return;
+        }
+        
+        if (!isRecording) {
+            recognition.lang = currentLanguage.speech;
+            recognition.start();
+            startVoiceBtn.setAttribute('aria-pressed', 'true');
+        } else {
+            recognition.stop();
+            startVoiceBtn.setAttribute('aria-pressed', 'false');
+        }
+    }
+
+    // Обработчики событий для голосового ввода
+    voiceButton.addEventListener('click', handleVoiceButtonClick);
+    voiceButton.addEventListener('touchstart', handleVoiceButtonClick);
+
+    startVoiceBtn.addEventListener('click', handleStartVoiceClick);
+    startVoiceBtn.addEventListener('touchstart', handleStartVoiceClick);
+
+    function showVoiceModal() {
+        voiceModal.classList.add('active');
+        voiceModal.removeAttribute('hidden');
+        voiceText.textContent = translations.voice_modal_text;
+        startVoiceBtn.setAttribute('aria-pressed', 'false');
+        // Предотвращаем скролл на мобильных устройствах
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideVoiceModal() {
+        voiceModal.classList.remove('active');
+        voiceModal.setAttribute('hidden', '');
+        if (isRecording && recognition) {
+            recognition.stop();
+            startVoiceBtn.setAttribute('aria-pressed', 'false');
+        }
+        // Возвращаем скролл
+        document.body.style.overflow = '';
+    }
+
+    function showLoading() {
+        loadingIndicator.style.display = 'flex';
+        loadingIndicator.removeAttribute('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function hideLoading() {
+        loadingIndicator.style.display = 'none';
+        loadingIndicator.setAttribute('hidden', '');
+        document.body.style.overflow = '';
+    }
+
+    
     function updateInterfaceLanguage() {
         messageInput.placeholder = translations.placeholder;
         sendButton.textContent = translations.send;
@@ -297,7 +367,96 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+    // Обработка touch событий для закрытия модального окна
+    let touchStartY = 0;
+    voiceModal.addEventListener('touchstart', (e) => {
+        if (e.target === voiceModal) {
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
 
+    voiceModal.addEventListener('touchmove', (e) => {
+        if (e.target === voiceModal) {
+            const touchEndY = e.touches[0].clientY;
+            const diff = touchEndY - touchStartY;
+            if (Math.abs(diff) > 50) {
+                hideVoiceModal();
+            }
+        }
+    }, { passive: true });
+
+    // Улучшенная обработка клавиатуры
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message) {
+                addMessage(message, true);
+                sendMessage(message);
+                messageInput.value = '';
+                messageInput.focus();
+            }
+        }
+    });
+
+    // Предотвращение случайных нажатий
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // Обработка offline/online состояний
+    window.addEventListener('online', () => {
+        addMessage('Connected to network', false);
+    });
+
+    window.addEventListener('offline', () => {
+        addMessage('Lost network connection', false);
+    });
+
+    // Обработка ошибок распознавания речи
+    function handleSpeechError(error) {
+        console.error('Speech recognition error:', error);
+        
+        let errorMessage;
+        switch (error.error) {
+            case 'not-allowed':
+                errorMessage = 'Microphone access denied';
+                break;
+            case 'network':
+                errorMessage = 'Network error occurred';
+                break;
+            default:
+                errorMessage = translations.voice_error;
+        }
+        
+        voiceText.textContent = errorMessage;
+        isRecording = false;
+        startVoiceBtn.classList.remove('recording');
+        startVoiceBtn.setAttribute('aria-pressed', 'false');
+    }
+
+    // Инициализация с проверкой поддержки функций
+    function init() {
+        if ('speechSynthesis' in window) {
+            speechSynthesis.getVoices(); // Предзагрузка голосов
+        }
+        
+        updateLanguage('lt');
+        
+        // Проверка поддержки необходимых API
+        if (!('fetch' in window)) {
+            addMessage('Your browser might not support all features', false);
+        }
+    }
+
+    init();
+
+    
     // Initialize
     updateLanguage('lt');
 });
