@@ -53,24 +53,23 @@ anthropic_client = anthropic.Anthropic(
 )
 
 def get_invitation_message(language):
+    url = "https://spiecius.inovacijuagentura.lt/office/visagine/"
     invitations = {
-        "ru": """
+        "ru": f"""
 
-«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. А в эту пятницу, 8 ноября, пройдет урок по искусственному интеллекту в Висагинасе в Инкубаторе (https://spiecius.inovacijuagentura.lt/office/visagine/).»""",
+«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. А в эту пятницу, 8 ноября, пройдет урок по искусственному интеллекту в Висагинасе в Инкубаторе (<a href="{url}" target="_blank">{url}</a>).»""",
         
-        "lt": """
+        "lt": f"""
 
-«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. O šį penktadienį, lapkričio 8 d., Visagino inkubatoriuje vyks dirbtinio intelekto pamoka (https://spiecius.inovacijuagentura.lt/office/visagine/).»""",
+«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. O šį penktadienį, lapkričio 8 d., Visagino inkubatoriuje vyks dirbtinio intelekto pamoka (<a href="{url}" target="_blank">{url}</a>).»""",
         
-        "en": """
+        "en": f"""
 
-«I invite everyone to a free 20-minute personal consultation on artificial intelligence. And this Friday, November 8, there will be an artificial intelligence lesson at the Visaginas Incubator (https://spiecius.inovacijuagentura.lt/office/visagine/).»"""
+«I invite everyone to a free 20-minute personal consultation on artificial intelligence. And this Friday, November 8, there will be an artificial intelligence lesson at the Visaginas Incubator (<a href="{url}" target="_blank">{url}</a>).»"""
     }
     return invitations.get(language, invitations["en"])  # Default to English if language not found
 
 def detect_language(text):
-    # Простая функция определения языка по первым словам
-    # В реальном приложении лучше использовать библиотеку langdetect или подобную
     first_chars = text.lower()[:100]
     
     if any(char in 'ąčęėįšųūž' for char in first_chars):
@@ -82,14 +81,13 @@ def detect_language(text):
 
 def get_ai_response(text):
     try:
-        # Определяем язык запроса
         detected_language = detect_language(text)
         
         message = anthropic_client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             temperature=0,
-            system=f"""You are an AI assistant designed to help beginners learn about artificial intelligence. 
+            system="""You are an AI assistant designed to help beginners learn about artificial intelligence. 
             Format your responses with clear structure:
             
             - Use bullet points for lists
@@ -108,6 +106,7 @@ def get_ai_response(text):
             - Tips
             
             Respond in the same language as the user's question.
+            Response should support HTML formatting.
             
             Always ensure your response is well-structured and easy to read.""",
             messages=[{
