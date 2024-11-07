@@ -143,5 +143,8 @@ def save_conversation(user_message, bot_response, is_voice=False):
         f.write(json.dumps(conversation, ensure_ascii=False) + '\n')
 
 if __name__ == '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
