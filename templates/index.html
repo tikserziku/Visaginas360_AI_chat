@@ -27,12 +27,16 @@
     
     <main class="chat-container" role="main">
         <div id="chat-messages" role="log" aria-live="polite" aria-atomic="false"></div>
-        <div class="input-container" role="group" aria-label="Message input">
-            <div class="language-selector" role="radiogroup" aria-label="Select language">
-                <button class="lang-btn" data-lang="lt" role="radio" aria-checked="true">LT</button>
-                <button class="lang-btn" data-lang="ru" role="radio" aria-checked="false">RU</button>
-                <button class="lang-btn" data-lang="en" role="radio" aria-checked="false">EN</button>
-            </div>
+        <div class="input-container">
+            <button id="lang-toggle" class="input-button language-button" aria-label="Change language">
+                <span>LT</span>
+            </button>
+            <button id="voice-button" class="input-button">
+                <span>🎤</span>
+            </button>
+            <input type="text" id="message-input" placeholder="Type your message...">
+            <button id="send-button" class="input-button">📤</button>
+        </div>
             <button id="voice-button" class="input-button" aria-label="Start voice input">
                 <span aria-hidden="true">🎤</span>
             </button>
