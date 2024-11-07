@@ -6,8 +6,12 @@ import json
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import logging
-logging.basicConfig(level=logging.DEBUG)
+
+logging.basicConfig(level=logging.INFO) # INFO для Heroku
 logger = logging.getLogger(__name__)
+
+app = Flask(__name__)  # Объявление app ПЕРЕД декораторами маршрутов!
+app.secret_key = os.urandom(24)
 
 @app.route('/chat', methods=['POST'])
 @limiter.limit("5 per minute")
