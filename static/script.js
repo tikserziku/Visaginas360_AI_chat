@@ -162,21 +162,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Voice Recognition Setup
+    // В функции где инициализируется распознавание речи, обновите настройки:
+
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
         recognition = new SpeechRecognition();
         
-        recognition.lang = 'ru-RU';
+        // Добавляем поддержку нескольких языков
         recognition.continuous = false;
         recognition.interimResults = false;
-
+        
+        // Определяем язык браузера
+        const browserLang = navigator.language.toLowerCase();
+        
+        // Устанавливаем соответствующий язык распознавания
+        if (browserLang.startsWith('lt')) {
+            recognition.lang = 'lt-LT';
+        } else if (browserLang.startsWith('ru')) {
+            recognition.lang = 'ru-RU';
+        } else {
+            recognition.lang = 'lt-LT, ru-RU, en-US';  // Поддержка множества языков
+        }
+    
         recognition.onstart = () => {
             isRecording = true;
             startVoiceBtn.classList.add('recording');
             voiceText.textContent = 'Listening...';
         };
-
+    
         recognition.onresult = (event) => {
             const text = event.results[0][0].transcript;
             if (text.trim()) {
@@ -185,19 +198,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMessage(text);
             }
         };
-
+    
         recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             voiceText.textContent = 'Error. Please try again.';
             isRecording = false;
             startVoiceBtn.classList.remove('recording');
         };
-
+    
         recognition.onend = () => {
             isRecording = false;
             startVoiceBtn.classList.remove('recording');
             voiceText.textContent = 'Click to speak';
         };
+    }
 
         // Voice Button Event Listeners
         voiceButton.addEventListener('click', showVoiceModal);
