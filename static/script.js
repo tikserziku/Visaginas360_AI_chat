@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             default:
                 currentLanguage.speech = 'en-US';
+            document.getElementById('lang-toggle').textContent = langCode.toUpperCase();
         }
 
         languageButtons.forEach(btn => {
@@ -198,7 +199,21 @@ document.addEventListener('DOMContentLoaded', () => {
         loadTranslations(langCode);
         localStorage.setItem('preferredLanguage', langCode);
     }
+        // Language toggle button click handler
+        document.getElementById('lang-toggle').addEventListener('click', (event) => {
+            // Cycle through languages
+            const currentLang = currentLanguage.code;
+            let nextLang;
+    
+            if (currentLang === 'lt') nextLang = 'ru';
+            else if (currentLang === 'ru') nextLang = 'en';
+            else nextLang = 'lt';
 
+
+            updateLanguage(nextLang);  // Call updateLanguage with the new language code
+            event.stopPropagation(); // Prevent dropdown from closing
+     
+    });
     // [Продолжение следует в части 2...]
      // Speech Recognition
     function initSpeechRecognition() {
