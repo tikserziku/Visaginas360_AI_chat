@@ -17,16 +17,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Функции для показа/скрытия модального окна
     const showVoiceModal = () => {
-        voiceModal.style.display = 'flex';
-        voiceText.textContent = 'Click to speak';
-    };
+    voiceModal.classList.add('active');
+    voiceText.textContent = 'Click to speak';
+};
 
-    const hideVoiceModal = () => {
-        voiceModal.style.display = 'none';
-        if (isRecording) {
-            recognition.stop();
-        }
-    };
+const hideVoiceModal = () => {
+    voiceModal.classList.remove('active');
+    if (isRecording) {
+        recognition.stop();
+    }
+};
+
+// В обработчике результатов распознавания
+recognition.onresult = (event) => {
+    const text = event.results[0][0].transcript;
+    
+    // Добавляем вопрос пользователя в чат
+    addMessage(text, true);
+    
+    // Скрываем модальное окно
+    hideVoiceModal();
+    
+    // Отправляем запрос и получаем ответ
+    sendMessage(text).then(() => {
+        // После получения ответа модальное окно уже скрыто
+        hideLoading();
+    });
+};
+
+// Обновите отображение текста распознавания
+recognition.onstart = () => {
+    isRecording = true;
+    startVoiceBtn.classList.add('recording');
+    voiceText.textContent = 'Listening...';
+};
 
     // Message Functions
     const addMessage = (text, isUser = false) => {
