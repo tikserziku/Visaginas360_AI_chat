@@ -1,0 +1,14 @@
+{
+  "placeholder": "Type your message...",
+  "send": "Send",
+  "voice_modal_text": "Click to speak",
+  "voice_listening": "Listening...",
+  "voice_error": "Error. Please try again.",
+  "loading": "Processing...",
+  "welcome_message": "Hello! I am your virtual assistant for learning about artificial intelligence. How can I help you today?",
+  "error_message": "An error occurred. Please try again.",
+  "about": "About",
+  "settings": "Settings",
+  "help": "Help",
+  "brand_name": "VISAGINAS360 AI"
+}
