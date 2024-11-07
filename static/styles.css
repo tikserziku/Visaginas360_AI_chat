@@ -12,6 +12,90 @@
     --gradient-start: #0a0a1a;
     --gradient-end: #1a1a3a;
 }
+.language-button {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: var(--chat-bg);
+    color: var(--text-color);
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: var(--neon-shadow);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+.language-button:hover {
+    background: rgba(0, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Фиксим размеры для мобильных */
+@media (max-width: 768px) {
+    .chat-container {
+        padding: 10px;
+        margin-top: 50px;
+        height: calc(100vh - 60px); /* Важно для фиксированной высоты */
+        max-height: calc(100vh - 60px);
+    }
+    
+    .input-container {
+        padding: 8px;
+        gap: 5px;
+    }
+
+    .input-button,
+    .language-button {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    #message-input {
+        padding: 8px;
+        font-size: 14px;
+        min-width: 0; /* Важно для flex-shrink */
+    }
+
+    /* Фиксим высоту чата */
+    #chat-messages {
+        height: calc(100vh - 160px);
+        margin-bottom: 10px;
+    }
+}
+
+/* Добавляем стили для лучшей отзывчивости */
+body {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.chat-container {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.input-container {
+    position: sticky;
+    bottom: 0;
+    background: var(--chat-bg);
+    z-index: 10;
+}
+
 
 .voice-text {
     position: absolute;
