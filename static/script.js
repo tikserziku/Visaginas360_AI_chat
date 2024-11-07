@@ -11,46 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const voiceText = document.getElementById('voice-text');
     const loadingIndicator = document.getElementById('loading-indicator');
     
+    let recognition = null;
+    let isRecording = false;
+
     // Utility Functions
     const showLoading = () => loadingIndicator.style.display = 'flex';
     const hideLoading = () => loadingIndicator.style.display = 'none';
 
     // Функции для показа/скрытия модального окна
     const showVoiceModal = () => {
-    voiceModal.classList.add('active');
-    voiceText.textContent = 'Click to speak';
-};
+        voiceModal.classList.add('active');
+        voiceText.textContent = 'Click to speak';
+    };
 
-const hideVoiceModal = () => {
-    voiceModal.classList.remove('active');
-    if (isRecording) {
-        recognition.stop();
-    }
-};
-
-// В обработчике результатов распознавания
-recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
-    
-    // Добавляем вопрос пользователя в чат
-    addMessage(text, true);
-    
-    // Скрываем модальное окно
-    hideVoiceModal();
-    
-    // Отправляем запрос и получаем ответ
-    sendMessage(text).then(() => {
-        // После получения ответа модальное окно уже скрыто
-        hideLoading();
-    });
-};
-
-// Обновите отображение текста распознавания
-recognition.onstart = () => {
-    isRecording = true;
-    startVoiceBtn.classList.add('recording');
-    voiceText.textContent = 'Listening...';
-};
+    const hideVoiceModal = () => {
+        voiceModal.classList.remove('active');
+        if (isRecording && recognition) {
+            recognition.stop();
+        }
+    };
 
     // Message Functions
     const addMessage = (text, isUser = false) => {
@@ -89,8 +68,7 @@ recognition.onstart = () => {
     // Voice Recognition Setup
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-        const recognition = new SpeechRecognition();
-        let isRecording = false;
+        recognition = new SpeechRecognition();
         
         recognition.lang = 'ru-RU';
         recognition.continuous = false;
@@ -105,10 +83,14 @@ recognition.onstart = () => {
         recognition.onresult = (event) => {
             const text = event.results[0][0].transcript;
             voiceText.textContent = text;
+            
+            // Добавляем сообщение в чат
+            addMessage(text, true);
+            
             // Скрываем модальное окно
             hideVoiceModal();
-            // Добавляем сообщение в чат и отправляем на сервер
-            addMessage(text, true);
+            
+            // Отправляем запрос и получаем ответ
             sendMessage(text);
         };
 
@@ -143,8 +125,16 @@ recognition.onstart = () => {
                 hideVoiceModal();
             }
         });
+
+        // Handle Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideVoiceModal();
+            }
+        });
     } else {
         voiceButton.style.display = 'none';
+        console.log('Speech Recognition API is not supported');
     }
 
     // Text input handlers
