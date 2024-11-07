@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRecording = false;
     let translations = {};
 
+    loadTranslations(); // Call loadTranslations to initiate localization
 
     async function loadTranslations() {
         const lang = navigator.language.startsWith('ru') ? 'ru' : 'en';
@@ -253,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-loadTranslations(); // Call loadTranslations to initiate localization
+    
     
     // Welcome Message
     setTimeout(() => {
