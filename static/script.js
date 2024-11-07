@@ -1,5 +1,6 @@
 // static/script.js
 document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const voiceButton = document.getElementById('voice-button');
@@ -10,11 +11,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const voiceText = document.getElementById('voice-text');
     const loadingIndicator = document.getElementById('loading-indicator');
     
-    // Show/hide loading indicator
+    let recognition = null;
+    let isRecording = false;
+
+    // Utility Functions
     const showLoading = () => loadingIndicator.style.display = 'flex';
     const hideLoading = () => loadingIndicator.style.display = 'none';
 
-    // Add message to chat
+    // Функции для показа/скрытия модального окна
+    const showVoiceModal = () => {
+        voiceModal.classList.add('active');
+        voiceText.textContent = 'Click to speak';
+    };
+
+    const hideVoiceModal = () => {
+        voiceModal.classList.remove('active');
+        if (isRecording && recognition) {
+            recognition.stop();
+        }
+    };
+
+    // Message Functions
     const addMessage = (text, isUser = false) => {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
@@ -23,29 +40,23 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     };
 
-    // Send message to server
-    const sendMessage = async (text, isVoice = false) => {
+    const sendMessage = async (text) => {
         try {
             showLoading();
-            const endpoint = isVoice ? '/process_voice' : '/chat';
-            const body = isVoice ? { voice_input: text } : { message: text };
             
-            const response = await fetch(endpoint, {
+            const response = await fetch('/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
+                body: JSON.stringify({ message: text })
             });
 
             if (!response.ok) throw new Error('Network response was not ok');
             
             const data = await response.json();
-            if (isVoice) {
-                addMessage(text, true);
-                addMessage(data.processed_text, false);
-                voiceModal.style.display = 'none';
-            } else {
-                addMessage(data.reply, false);
-            }
+            addMessage(data.reply, false);
+            
+            // Скрываем модальное окно после получения ответа
+            hideVoiceModal();
         } catch (error) {
             console.error('Error:', error);
             addMessage('Произошла ошибка. Попробуйте еще раз.', false);
@@ -54,7 +65,79 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Handle text input
+    // Voice Recognition Setup
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        recognition.lang = 'ru-RU';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            isRecording = true;
+            startVoiceBtn.classList.add('recording');
+            voiceText.textContent = 'Listening...';
+        };
+
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            voiceText.textContent = text;
+            
+            // Добавляем сообщение в чат
+            addMessage(text, true);
+            
+            // Скрываем модальное окно
+            hideVoiceModal();
+            
+            // Отправляем запрос и получаем ответ
+            sendMessage(text);
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            voiceText.textContent = 'Error. Please try again.';
+            isRecording = false;
+            startVoiceBtn.classList.remove('recording');
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            startVoiceBtn.classList.remove('recording');
+            voiceText.textContent = 'Click to speak';
+        };
+
+        // Voice Modal Controls
+        voiceButton.addEventListener('click', showVoiceModal);
+        closeModal.addEventListener('click', hideVoiceModal);
+
+        startVoiceBtn.addEventListener('click', () => {
+            if (!isRecording) {
+                recognition.start();
+            } else {
+                recognition.stop();
+            }
+        });
+
+        // Close modal on outside click
+        window.addEventListener('click', (e) => {
+            if (e.target === voiceModal) {
+                hideVoiceModal();
+            }
+        });
+
+        // Handle Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                hideVoiceModal();
+            }
+        });
+    } else {
+        voiceButton.style.display = 'none';
+        console.log('Speech Recognition API is not supported');
+    }
+
+    // Text input handlers
     sendButton.addEventListener('click', () => {
         const message = messageInput.value.trim();
         if (message) {
@@ -71,73 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Voice input handling
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-        const recognition = new SpeechRecognition();
-        
-        recognition.lang = 'ru-RU';
-        recognition.continuous = false;
-        recognition.interimResults = false;
-
-        recognition.onresult = (event) => {
-            const text = event.results[0][0].transcript;
-            voiceText.textContent = text;
-            sendMessage(text, true);
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            voiceText.textContent = 'Ошибка распознавания речи. Попробуйте еще раз.';
-        };
-
-        recognition.onend = () => {
-            startVoiceBtn.disabled = false;
-            voiceButton.classList.remove('recording');
-        };
-
-        // Voice modal controls
-        voiceButton.addEventListener('click', () => {
-            voiceModal.style.display = 'block';
-            voiceText.textContent = '';
-        });
-
-        closeModal.addEventListener('click', () => {
-            voiceModal.style.display = 'none';
-        });
-
-        startVoiceBtn.addEventListener('click', () => {
-            try {
-                startVoiceBtn.disabled = true;
-                voiceButton.classList.add('recording');
-                recognition.start();
-            } catch (error) {
-                console.error('Speech recognition error:', error);
-                startVoiceBtn.disabled = false;
-                voiceButton.classList.remove('recording');
-            }
-        });
-
-        // Close modal on outside click
-        window.addEventListener('click', (e) => {
-            if (e.target === voiceModal) {
-                voiceModal.style.display = 'none';
-            }
-        });
-
-        // Handle Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && voiceModal.style.display === 'block') {
-                voiceModal.style.display = 'none';
-            }
-        });
-    } else {
-        // Hide voice button if speech recognition is not supported
-        voiceButton.style.display = 'none';
-        console.log('Speech Recognition API is not supported in this browser');
-    }
-
-    // Добавление приветственного сообщения при загрузке
+    // Add welcome message
     setTimeout(() => {
         addMessage('Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?', false);
     }, 500);

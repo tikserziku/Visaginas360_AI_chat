@@ -1,24 +1,28 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Learning Assistant</title>
+    <meta name="description" content="VISAGINAS360 AI - Ваш виртуальный помощник">
+    <title>VISAGINAS360 AI Assistant</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <main class="chat-container">
-        <div class="logo-container">
-            <div class="logo-circle">
-                <span class="logo-icon">🤖</span>
-                <h1>AI Learning Assistant</h1>
-                <p>Я ваш виртуальный помощник по изучению искусственного интеллекта</p>
-            </div>
+    <nav class="navbar">
+        <button class="menu-button" id="menuButton">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Menu">
+        </button>
+        <span class="brand-name">VISAGINAS360 AI</span>
+        <div class="dropdown-menu" id="dropdownMenu">
+            <a href="#about">О проекте</a>
+            <a href="#settings">Настройки</a>
+            <a href="#help">Помощь</a>
         </div>
+    </nav>
 
+    <main class="chat-container">
         <div id="chat-messages"></div>
-
         <div class="input-container">
             <button id="voice-button" class="input-button">
                 <span>🎤</span>
@@ -30,27 +34,16 @@
         </div>
     </main>
 
-    <!-- Modal for voice input -->
     <div id="voice-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Голосовой ввод</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="voice-content">
-                <div class="voice-status">
-                    <div class="voice-indicator"></div>
-                    <span class="voice-status-text">Нажмите кнопку для начала записи</span>
-                </div>
-                <div class="voice-result">
-                    <p id="voice-text"></p>
-                </div>
-                <button id="start-voice" class="voice-button">
-                    <span>🎤</span> Начать запись
-                </button>
-            </div>
-        </div>
+    <div class="modal-content voice-compact">
+        <span class="close">&times;</span>
+        <button id="start-voice" class="voice-circle-button">
+            <span class="mic-icon">🎤</span>
+            <span class="recording-indicator"></span>
+        </button>
+        <div id="voice-text" class="voice-text"></div>
     </div>
+</div>
 
     <div id="loading-indicator">
         <div class="spinner"></div>
