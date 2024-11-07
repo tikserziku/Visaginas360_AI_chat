@@ -17,7 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const aboutLink = document.querySelector('[href="#about"]');
     const settingsLink = document.querySelector('[href="#settings"]');
     const helpLink = document.querySelector('[href="#help"]');
+    const languageButtons = document.querySelectorAll('.lang-btn');
 
+    
+    let currentLanguage = 'lt'; // Начальный язык
     let recognition = null;
     let isRecording = false;
     let translations = {};
@@ -63,6 +66,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Функция обновления активного языка
+function updateActiveLanguage(lang) {
+    currentLanguage = lang;
+    languageButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+    });
+    
+    // Обновляем язык распознавания речи
+    if (recognition) {
+        switch(lang) {
+            case 'lt':
+                recognition.lang = 'lt-LT';
+                break;
+            case 'ru':
+                recognition.lang = 'ru-RU';
+                break;
+            case 'en':
+                recognition.lang = 'en-US';
+                break;
+        }
+    }
+}
+
+// Добавляем обработчики для кнопок
+languageButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        updateActiveLanguage(btn.dataset.lang);
+    });
+});
+
+// Устанавливаем начальный активный язык
+updateActiveLanguage('lt');
+    
     function updateInterfaceLanguage() {
         messageInput.placeholder = translations.placeholder;
         sendButton.textContent = translations.send;
