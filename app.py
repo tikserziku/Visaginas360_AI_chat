@@ -52,13 +52,44 @@ anthropic_client = anthropic.Anthropic(
     api_key=os.environ.get('Anthropic_API_KEY')
 )
 
+def get_invitation_message(language):
+    invitations = {
+        "ru": """
+
+«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. А в эту пятницу, 8 ноября, пройдет урок по искусственному интеллекту в Висагинасе в Инкубаторе (https://spiecius.inovacijuagentura.lt/office/visagine/).»""",
+        
+        "lt": """
+
+«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. O šį penktadienį, lapkričio 8 d., Visagino inkubatoriuje vyks dirbtinio intelekto pamoka (https://spiecius.inovacijuagentura.lt/office/visagine/).»""",
+        
+        "en": """
+
+«I invite everyone to a free 20-minute personal consultation on artificial intelligence. And this Friday, November 8, there will be an artificial intelligence lesson at the Visaginas Incubator (https://spiecius.inovacijuagentura.lt/office/visagine/).»"""
+    }
+    return invitations.get(language, invitations["en"])  # Default to English if language not found
+
+def detect_language(text):
+    # Простая функция определения языка по первым словам
+    # В реальном приложении лучше использовать библиотеку langdetect или подобную
+    first_chars = text.lower()[:100]
+    
+    if any(char in 'ąčęėįšųūž' for char in first_chars):
+        return "lt"
+    elif any(char in 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя' for char in first_chars):
+        return "ru"
+    else:
+        return "en"
+
 def get_ai_response(text):
     try:
+        # Определяем язык запроса
+        detected_language = detect_language(text)
+        
         message = anthropic_client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             temperature=0,
-            system="""You are an AI assistant designed to help beginners learn about artificial intelligence. 
+            system=f"""You are an AI assistant designed to help beginners learn about artificial intelligence. 
             Format your responses with clear structure:
             
             - Use bullet points for lists
@@ -76,16 +107,28 @@ def get_ai_response(text):
             - Steps
             - Tips
             
+            Respond in the same language as the user's question.
+            
             Always ensure your response is well-structured and easy to read.""",
             messages=[{
                 "role": "user",
                 "content": text
             }]
         )
-        return message.content[0].text
+        response = message.content[0].text
+        
+        # Добавляем приглашение на соответствующем языке
+        invitation = get_invitation_message(detected_language)
+        
+        return response + invitation
     except Exception as e:
         print(f"Claude API error: {str(e)}")
-        return "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз."
+        error_messages = {
+            "ru": "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз.",
+            "lt": "Atsiprašome, įvyko klaida. Prašome bandyti dar kartą.",
+            "en": "Sorry, an error occurred. Please try again."
+        }
+        return error_messages.get(detected_language, error_messages["en"])
 
 @app.route('/')
 def index():
