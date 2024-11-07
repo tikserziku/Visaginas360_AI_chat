@@ -66,6 +66,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-bottom: 20px; /* Или другое значение по необходимости */
 }
 
 #chat-messages {
