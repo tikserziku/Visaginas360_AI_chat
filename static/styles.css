@@ -199,9 +199,9 @@ body {
 }
 
 /* Voice Modal */
-/* Обновите стили модального окна в styles.css */
+/* Удалите оба существующих определения .modal и замените на это */
 .modal {
-    display: none; /* Начальное состояние - скрыто */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -214,8 +214,8 @@ body {
     align-items: center;
 }
 
-/* При показе модального окна */
-.modal.show {
+/* При активации модального окна */
+.modal.active {
     display: flex;
 }
 
