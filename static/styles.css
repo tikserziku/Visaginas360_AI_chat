@@ -199,8 +199,9 @@ body {
 }
 
 /* Voice Modal */
+/* Обновите стили модального окна в styles.css */
 .modal {
-    display: none;
+    display: none; /* Начальное состояние - скрыто */
     position: fixed;
     top: 0;
     left: 0;
@@ -211,6 +212,11 @@ body {
     z-index: 1000;
     justify-content: center;
     align-items: center;
+}
+
+/* При показе модального окна */
+.modal.show {
+    display: flex;
 }
 
 .voice-compact {
