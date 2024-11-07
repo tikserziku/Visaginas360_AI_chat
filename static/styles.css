@@ -234,6 +234,16 @@ body {
     padding-bottom: 8px;
 }
 
+/* Стили для выделения текста */
+::selection {
+    background: rgba(0, 255, 255, 0.2);
+    color: var(--text-color);
+}
+
+.message::selection {
+    background: rgba(0, 255, 255, 0.15);
+}
+
 
 .user-message {
     background: var(--user-message-bg);
@@ -246,6 +256,51 @@ body {
     margin-right: auto;
     border: 1px solid rgba(255, 0, 255, 0.2);
 }
+
+/* Стили для ссылок в сообщениях */
+.message a {
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(0, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.message a:hover {
+    border-bottom-style: solid;
+    border-bottom-color: var(--primary-color);
+}
+
+/* Стили для длинных сообщений */
+.message p + p {
+    margin-top: 16px;
+}
+
+.message blockquote {
+    border-left: 3px solid var(--primary-color);
+    margin: 12px 0;
+    padding-left: 16px;
+    font-style: italic;
+    background: rgba(0, 255, 255, 0.05);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+}
+
+/* Анимация появления сообщений */
+@keyframes messageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message {
+    animation: messageSlideIn 0.3s ease forwards;
+}
+
 
 /* Input Container */
 .input-container {
