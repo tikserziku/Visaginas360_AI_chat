@@ -7,14 +7,17 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import logging
 
-logging.basicConfig(level=logging.INFO) # INFO для Heroku
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__)  # Объявление app ПЕРЕД декораторами маршрутов!
+app = Flask(__name__)  # Объявляем app только ОДИН раз
 app.secret_key = os.urandom(24)
 
-@app.route('/chat', methods=['POST'])
-@limiter.limit("5 per minute")
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["100 per hour"]
+)
 def chat():
     """Chat endpoint using Claude"""
     try:
