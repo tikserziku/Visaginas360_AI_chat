@@ -21,146 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let recognition = null;
     let isRecording = false;
     let translations = {};
-    let currentRecognitionLang = 'ru-RU';
+    let currentRecognitionLang = 'lt-LT'; // Изменено на литовский по умолчанию
 
     loadTranslations();
 
-    async function loadTranslations() {
-        const lang = navigator.language.startsWith('ru') ? 'ru' : 'en';
-        const url = `/static/locales/translations${lang === 'en' ? '_en' : ''}.json`;
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
-            }
-            translations = await response.json();
-        } catch (error) {
-            console.error('Error loading translations:', error);
-            translations = {  // Default Russian translations
-                "placeholder": "Введите ваше сообщение...",
-                "send": "📤",
-                "voice_modal_text": "Click to speak",
-                "voice_listening": "Listening...",
-                "voice_error": "Error. Please try again.",
-                "loading": "Обработка...",
-                "welcome_message": "Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?",
-                "error_message": "Произошла ошибка. Пожалуйста, попробуйте еще раз.",
-                "about": "О проекте",
-                "settings": "Настройки",
-                "help": "Помощь",
-                "brand_name": "VISAGINAS360 AI",
-                "lang": "ru-RU" // Default recognition language
-            };
-        } finally {
-            updateInterfaceLanguage();
-            document.documentElement.lang = lang;
-        }
-    }
-
-    function updateInterfaceLanguage() {
-        messageInput.placeholder = translations.placeholder;
-        sendButton.textContent = translations.send;
-        voiceText.textContent = translations.voice_modal_text;
-        loadingIndicator.querySelector('span').textContent = translations.loading;
-
-        brandName.textContent = translations.brand_name;
-        aboutLink.textContent = translations.about;
-        settingsLink.textContent = translations.settings;
-        helpLink.textContent = translations.help;
-
-        chatMessages.innerHTML = '';
-        addMessage(translations.welcome_message, false);
-
-        currentRecognitionLang = translations.lang; // Update recognition language
-    }
-
-
-
-    // Message Handling Functions
-    const formatMessage = (text) => {
-        if (!text) return '';
-        
-        // Заменяем маркеры списка
-        text = text.replace(/^- /gm, '• ');
-        text = text.replace(/^\d+\. /gm, (match) => `\n${match}`);
-        
-        // Форматируем абзацы
-        return text.split('\n').filter(line => line.trim()).join('\n');
-    };
-
-    const addMessage = (text, isUser = false) => {
-        if (!text) return;
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-
-        // Форматируем текст только для ответов бота
-        const formattedText = isUser ? text : formatMessage(text);
-        
-        // Создаём параграфы
-        formattedText.split('\n').forEach(line => {
-            if (line.trim()) {
-                const p = document.createElement('p');
-                p.textContent = line;
-                messageDiv.appendChild(p);
-            }
-        });
-
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    };
-
-    // API Communication
-    const sendMessage = async (text) => {
-        if (!text.trim()) return;
-        
-        try {
-            showLoading();
-            
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text })
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-
-            const data = await response.json();
-            
-            if (data.reply) {
-                addMessage(data.reply, false);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            addMessage('Произошла ошибка. Пожалуйста, попробуйте еще раз.', false);
-        } finally {
-            hideLoading();
-        }
-    };
-
-    // Loading Indicator
-    const showLoading = () => loadingIndicator.style.display = 'flex';
-    const hideLoading = () => loadingIndicator.style.display = 'none';
-
-    // Voice Modal Controls
-    const showVoiceModal = () => {
-        voiceModal.classList.add('active');
-        voiceText.textContent = 'Click to speak';
-    };
-
-    const hideVoiceModal = () => {
-        voiceModal.classList.remove('active');
-        if (isRecording && recognition) {
-            recognition.stop();
-        }
-    };
-
-    // В функции где инициализируется распознавание речи, обновите настройки:
-
-        function startVoiceRecognition() {
+    // Инициализация распознавания речи
+    function initSpeechRecognition() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             voiceButton.style.display = 'none';
             console.log('Speech Recognition API is not supported');
@@ -168,92 +34,87 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-
-        if (recognition === null) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                if (text.trim()) {
-                    addMessage(text, true);
-                    hideVoiceModal();
-                    sendMessage(text);
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                voiceText.textContent = translations.voice_error || 'Error. Please try again.';
-                isRecording = false;
-                startVoiceBtn.classList.remove('recording');
-            };
-
-            recognition.onend = () => {
-                isRecording = false;
-                startVoiceBtn.classList.remove('recording');
-                voiceText.textContent = translations.voice_modal_text || 'Click to speak';
-            };
-        }
-
+        recognition = new SpeechRecognition();
+        
+        // Базовые настройки
+        recognition.continuous = false;
+        recognition.interimResults = false;
         recognition.lang = currentRecognitionLang;
-        recognition.start();
-    } else {
-                recognition.stop();
+
+        // Обработчики событий
+        recognition.onstart = () => {
+            isRecording = true;
+            startVoiceBtn.classList.add('recording');
+            voiceText.textContent = translations.voice_listening || 'Listening...';
+        };
+
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            if (text.trim()) {
+                addMessage(text, true);
+                hideVoiceModal();
+                sendMessage(text);
             }
-        });
-    } else {
-        voiceButton.style.display = 'none';
-        console.log('Speech Recognition API is not supported');
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            voiceText.textContent = translations.voice_error || 'Error. Please try again.';
+            isRecording = false;
+            startVoiceBtn.classList.remove('recording');
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            startVoiceBtn.classList.remove('recording');
+            voiceText.textContent = translations.voice_modal_text || 'Click to speak';
+        };
     }
 
-    // Menu Controls
-    menuButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdownMenu.classList.toggle('show');
+    // Функция запуска/остановки распознавания
+    function toggleRecognition() {
+        if (!recognition) {
+            initSpeechRecognition();
+        }
+
+        if (!isRecording) {
+            recognition.lang = currentRecognitionLang;
+            recognition.start();
+        } else {
+            recognition.stop();
+        }
+    }
+
+    // Обработчики событий для голосового ввода
+    voiceButton.addEventListener('click', showVoiceModal);
+    closeModal.addEventListener('click', hideVoiceModal);
+    startVoiceBtn.addEventListener('click', toggleRecognition);
+
+    // Добавляем кнопку переключения языка
+    const languageButton = document.createElement('button');
+    languageButton.className = 'input-button language-button';
+    languageButton.textContent = '🌐';
+    languageButton.addEventListener('click', () => {
+        // Циклическое переключение между языками
+        const languages = ['lt-LT', 'ru-RU', 'en-US'];
+        const currentIndex = languages.indexOf(currentRecognitionLang);
+        const nextIndex = (currentIndex + 1) % languages.length;
+        currentRecognitionLang = languages[nextIndex];
+        
+        // Обновляем язык для текущего распознавания
+        if (recognition) {
+            recognition.lang = currentRecognitionLang;
+        }
+        
+        // Показываем текущий язык
+        const languageNames = {
+            'lt-LT': 'LT',
+            'ru-RU': 'RU',
+            'en-US': 'EN'
+        };
+        languageButton.setAttribute('title', `Current: ${languageNames[currentRecognitionLang]}`);
     });
 
-    // Text Input Handlers
-    sendButton.addEventListener('click', () => {
-        const message = messageInput.value.trim();
-        if (message) {
-            addMessage(message, true);
-            sendMessage(message);
-            messageInput.value = '';
-        }
-    });
-
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendButton.click();
-        }
-    });
-
-    // Global Event Listeners
-    document.addEventListener('click', (e) => {
-        // Закрываем меню при клике вне его
-        if (!dropdownMenu.contains(e.target) && !menuButton.contains(e.target)) {
-            dropdownMenu.classList.remove('show');
-        }
-        // Закрываем модальное окно при клике вне его
-        if (e.target === voiceModal) {
-            hideVoiceModal();
-        }
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            hideVoiceModal();
-            dropdownMenu.classList.remove('show');
-        }
-    });
-
-    
-    
-    // Welcome Message
-    setTimeout(() => {
-        addMessage('Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?', false);
-    }, 500);
+    // Добавляем кнопку языка перед кнопкой микрофона
+    voiceButton.parentNode.insertBefore(languageButton, voiceButton);
 });
