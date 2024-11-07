@@ -40,6 +40,49 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     };
 
+    // Обновите функцию addMessage в script.js
+const formatMessage = (text) => {
+    // Заменяем дефисы в начале строки на маркеры списка
+    text = text.replace(/^- /gm, '• ');
+    
+    // Добавляем отступы для нумерованных списков
+    text = text.replace(/^\d+\. /gm, (match) => {
+        return '\n' + match;
+    });
+    
+    // Добавляем дополнительные переносы между параграфами
+    text = text.replace(/\n\n/g, '\n\n');
+    
+    return text;
+};
+
+const addMessage = (text, isUser = false) => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    
+    // Форматируем текст только для ответов бота
+    if (!isUser) {
+        text = formatMessage(text);
+    }
+    
+    // Создаем параграфы для каждой строки
+    const paragraphs = text.split('\n').filter(p => p.trim());
+    paragraphs.forEach((p, index) => {
+        const paragraph = document.createElement('p');
+        paragraph.textContent = p;
+        messageDiv.appendChild(paragraph);
+        
+        // Добавляем разделитель между секциями
+        if (index < paragraphs.length - 1 && p.endsWith(':')) {
+            const divider = document.createElement('hr');
+            messageDiv.appendChild(divider);
+        }
+    });
+
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+    
     const sendMessage = async (text) => {
         try {
             showLoading();
