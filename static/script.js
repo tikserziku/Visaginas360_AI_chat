@@ -23,6 +23,50 @@ document.addEventListener('DOMContentLoaded', () => {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     };
 
+    // Добавьте в начало static/script.js
+const welcomeMessages = {
+    'ru': 'Добро пожаловать в AI Assistant!\nЯ помогу вам изучить искусственный интеллект.',
+    'lt': 'Sveiki atvykę į AI Assistant!\nAš padėsiu jums mokytis dirbtinio intelekto.',
+    'en': 'Welcome to AI Assistant!\nI will help you learn artificial intelligence.'
+};
+
+function detectLanguage() {
+    // Приоритет: параметр URL > язык браузера > настройки системы > английский по умолчанию
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    
+    if (urlLang && welcomeMessages[urlLang]) {
+        return urlLang;
+    }
+    
+    const browserLang = navigator.language.split('-')[0];
+    if (welcomeMessages[browserLang]) {
+        return browserLang;
+    }
+    
+    return 'en'; // По умолчанию английский
+}
+
+function showWelcomeModal() {
+    const lang = detectLanguage();
+    const welcomeModal = document.getElementById('welcome-modal');
+    const welcomeText = document.getElementById('welcome-text');
+    
+    welcomeText.textContent = welcomeMessages[lang];
+    welcomeModal.style.display = 'block';
+    
+    document.getElementById('start-button').addEventListener('click', () => {
+        welcomeModal.style.display = 'none';
+        // Сохраняем в localStorage чтобы не показывать снова
+        localStorage.setItem('welcomeShown', 'true');
+    });
+}
+
+// Проверяем, показывали ли уже приветствие
+if (!localStorage.getItem('welcomeShown')) {
+    window.addEventListener('load', showWelcomeModal);
+}
+    
     // Send message to server
     const sendMessage = async (text, isVoice = false) => {
         try {

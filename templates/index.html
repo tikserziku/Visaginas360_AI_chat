@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
+    <!-- Добавьте в templates/index.html перед main -->
+<div id="welcome-modal" class="welcome-modal">
+    <div class="welcome-content">
+        <img id="welcome-logo" src="/static/images/logo.png" alt="AI Assistant Logo">
+        <div id="welcome-text"></div>
+        <button id="start-button" class="start-button">START</button>
+    </div>
+</div>
     <main class="chat-container">
         <div class="logo-container">
             <div class="logo-circle">
