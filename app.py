@@ -57,17 +57,17 @@ def get_invitation_message(language):
     invitations = {
         "ru": f"""
 
-«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. А в эту пятницу, 8 ноября, пройдет урок по искусственному интеллекту в Висагинасе в Инкубаторе (<a href="{url}" target="_blank">{url}</a>).»""",
+«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. А в эту пятницу, 8 ноября, пройдет урок по искусственному интеллекту в Висагинасе в Инкубаторе ([Подробнее здесь]({url})).»""",
         
         "lt": f"""
 
-«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. O šį penktadienį, lapkričio 8 d., Visagino inkubatoriuje vyks dirbtinio intelekto pamoka (<a href="{url}" target="_blank">{url}</a>).»""",
+«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. O šį penktadienį, lapkričio 8 d., Visagino inkubatoriuje vyks dirbtinio intelekto pamoka ([Sužinoti daugiau]({url})).»""",
         
         "en": f"""
 
-«I invite everyone to a free 20-minute personal consultation on artificial intelligence. And this Friday, November 8, there will be an artificial intelligence lesson at the Visaginas Incubator (<a href="{url}" target="_blank">{url}</a>).»"""
+«I invite everyone to a free 20-minute personal consultation on artificial intelligence. And this Friday, November 8, there will be an artificial intelligence lesson at the Visaginas Incubator ([Learn more]({url})).»"""
     }
-    return invitations.get(language, invitations["en"])  # Default to English if language not found
+    return invitations.get(language, invitations["en"])
 
 def detect_language(text):
     first_chars = text.lower()[:100]
@@ -88,7 +88,7 @@ def get_ai_response(text):
             max_tokens=1000,
             temperature=0,
             system="""You are an AI assistant designed to help beginners learn about artificial intelligence. 
-            Format your responses with clear structure:
+            Format your responses with clear structure and support for Markdown formatting:
             
             - Use bullet points for lists
             - Add empty lines between paragraphs
@@ -97,6 +97,7 @@ def get_ai_response(text):
             - Keep paragraphs short and focused
             - Use indentation for sub-points
             - Add line breaks for better readability
+            - Support Markdown links in the format [text](url)
             
             When answering, maintain a clear hierarchy in the information and use appropriate formatting for:
             - Main topics
@@ -106,7 +107,6 @@ def get_ai_response(text):
             - Tips
             
             Respond in the same language as the user's question.
-            Response should support HTML formatting.
             
             Always ensure your response is well-structured and easy to read.""",
             messages=[{
