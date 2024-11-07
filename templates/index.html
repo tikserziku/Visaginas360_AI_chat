@@ -1,70 +1,97 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Learning Assistant</title>
+    <meta name="description" content="VISAGINAS360 AI - Ваш виртуальный помощник по изучению искусственного интеллекта">
+    <meta name="theme-color" content="#0a0a1a">
+    <title>VISAGINAS360 AI Assistant</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <!-- Добавьте в templates/index.html перед main -->
-<div id="welcome-modal" class="welcome-modal">
-    <div class="welcome-content">
-        <img id="welcome-logo" src="/static/images/logo.png" alt="AI Assistant Logo">
-        <div id="welcome-text"></div>
-        <button id="start-button" class="start-button">START</button>
-    </div>
-</div>
-    <main class="chat-container">
-        <div class="logo-container">
-            <div class="logo-circle">
-                <span class="logo-icon">🤖</span>
-                <h1>AI Learning Assistant</h1>
-                <p>Я ваш виртуальный помощник по изучению искусственного интеллекта</p>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <button class="menu-button" id="menuButton" aria-label="Открыть меню">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="VISAGINAS360 Logo">
+        </button>
+        <span class="brand-name">VISAGINAS360 AI</span>
+        <div class="dropdown-menu" id="dropdownMenu" aria-hidden="true">
+            <a href="#about">О проекте</a>
+            <a href="#settings">Настройки</a>
+            <a href="#help">Помощь</a>
+            <div class="language-selector">
+                <button data-lang="ru">РУС</button>
+                <button data-lang="en">ENG</button>
+                <button data-lang="lt">LT</button>
             </div>
         </div>
+    </nav>
 
-        <div id="chat-messages"></div>
+    <!-- Welcome Modal -->
+    <div id="welcome-modal" class="welcome-modal" aria-hidden="true">
+        <div class="welcome-content">
+            <img id="welcome-logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="VISAGINAS360 AI Logo">
+            <div id="welcome-text"></div>
+            <button id="start-button" class="start-button">START</button>
+        </div>
+    </div>
 
+    <!-- Main Chat Interface -->
+    <main class="chat-container">
+        <div id="chat-messages" aria-live="polite"></div>
         <div class="input-container">
-            <button id="voice-button" class="input-button">
-                <span>🎤</span>
+            <button id="voice-button" class="input-button" aria-label="Голосовой ввод">
+                <span aria-hidden="true">🎤</span>
             </button>
-            <input type="text" id="message-input" placeholder="Введите ваше сообщение...">
-            <button id="send-button" class="input-button">
-                <span>📤</span>
+            <input 
+                type="text" 
+                id="message-input" 
+                placeholder="Введите ваше сообщение..." 
+                aria-label="Сообщение"
+            >
+            <button id="send-button" class="input-button" aria-label="Отправить">
+                <span aria-hidden="true">📤</span>
             </button>
         </div>
     </main>
 
-    <!-- Modal for voice input -->
-    <div id="voice-modal" class="modal">
+    <!-- Voice Input Modal -->
+    <div id="voice-modal" class="modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Голосовой ввод</h3>
-                <span class="close">&times;</span>
+                <button class="close" aria-label="Закрыть">&times;</button>
             </div>
             <div class="voice-content">
                 <div class="voice-status">
-                    <div class="voice-indicator"></div>
+                    <div class="voice-indicator" aria-hidden="true"></div>
                     <span class="voice-status-text">Нажмите кнопку для начала записи</span>
                 </div>
                 <div class="voice-result">
                     <p id="voice-text"></p>
                 </div>
                 <button id="start-voice" class="voice-button">
-                    <span>🎤</span> Начать запись
+                    <span aria-hidden="true">🎤</span> Начать запись
                 </button>
             </div>
         </div>
     </div>
 
-    <div id="loading-indicator">
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" aria-hidden="true">
         <div class="spinner"></div>
         <span>Обработка...</span>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+    
+    <!-- No-JS Fallback -->
+    <noscript>
+        <div class="noscript-warning">
+            Для работы с VISAGINAS360 AI необходимо включить JavaScript в вашем браузере.
+        </div>
+    </noscript>
 </body>
 </html>
