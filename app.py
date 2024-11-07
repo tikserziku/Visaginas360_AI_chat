@@ -5,7 +5,31 @@ from datetime import datetime
 import json
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
+@app.route('/chat', methods=['POST'])
+@limiter.limit("5 per minute")
+def chat():
+    """Chat endpoint using Claude"""
+    try:
+        message = request.json.get('message', '')
+        logger.debug(f"Received message: {message}")
+        
+        if not message:
+            return jsonify({'error': 'Empty message'}), 400
+
+        response = get_ai_response(message)
+        logger.debug(f"AI response: {response}")
+        
+        # Save conversation to file
+        save_conversation(message, response)
+        
+        return jsonify({'reply': response})
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {str(e)}")
+        return jsonify({'error': 'Service temporarily unavailable'}), 503
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
