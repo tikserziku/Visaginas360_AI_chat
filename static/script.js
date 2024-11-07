@@ -1,4 +1,5 @@
-// static/script.js
+'use strict';
+
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const messageInput = document.getElementById('message-input');
@@ -10,80 +11,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const startVoiceBtn = document.getElementById('start-voice');
     const voiceText = document.getElementById('voice-text');
     const loadingIndicator = document.getElementById('loading-indicator');
-    
+    const menuButton = document.getElementById('menuButton');
+    const dropdownMenu = document.getElementById('dropdownMenu');
+
     let recognition = null;
     let isRecording = false;
 
-    // Utility Functions
-    const showLoading = () => loadingIndicator.style.display = 'flex';
-    const hideLoading = () => loadingIndicator.style.display = 'none';
-
-    // Функции для показа/скрытия модального окна
-    const showVoiceModal = () => {
-        voiceModal.classList.add('active');
-        voiceText.textContent = 'Click to speak';
+    // Message Handling Functions
+    const formatMessage = (text) => {
+        if (!text) return '';
+        
+        // Заменяем маркеры списка
+        text = text.replace(/^- /gm, '• ');
+        text = text.replace(/^\d+\. /gm, (match) => `\n${match}`);
+        
+        // Форматируем абзацы
+        return text.split('\n').filter(line => line.trim()).join('\n');
     };
 
-    const hideVoiceModal = () => {
-        voiceModal.classList.remove('active');
-        if (isRecording && recognition) {
-            recognition.stop();
-        }
-    };
-
-    // Message Functions
     const addMessage = (text, isUser = false) => {
+        if (!text) return;
+
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-        messageDiv.textContent = text;
+
+        // Форматируем текст только для ответов бота
+        const formattedText = isUser ? text : formatMessage(text);
+        
+        // Создаём параграфы
+        formattedText.split('\n').forEach(line => {
+            if (line.trim()) {
+                const p = document.createElement('p');
+                p.textContent = line;
+                messageDiv.appendChild(p);
+            }
+        });
+
         chatMessages.appendChild(messageDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     };
 
-    // Обновите функцию addMessage в script.js
-const formatMessage = (text) => {
-    // Заменяем дефисы в начале строки на маркеры списка
-    text = text.replace(/^- /gm, '• ');
-    
-    // Добавляем отступы для нумерованных списков
-    text = text.replace(/^\d+\. /gm, (match) => {
-        return '\n' + match;
-    });
-    
-    // Добавляем дополнительные переносы между параграфами
-    text = text.replace(/\n\n/g, '\n\n');
-    
-    return text;
-};
-
-const addMessage = (text, isUser = false) => {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-    
-    // Форматируем текст только для ответов бота
-    if (!isUser) {
-        text = formatMessage(text);
-    }
-    
-    // Создаем параграфы для каждой строки
-    const paragraphs = text.split('\n').filter(p => p.trim());
-    paragraphs.forEach((p, index) => {
-        const paragraph = document.createElement('p');
-        paragraph.textContent = p;
-        messageDiv.appendChild(paragraph);
-        
-        // Добавляем разделитель между секциями
-        if (index < paragraphs.length - 1 && p.endsWith(':')) {
-            const divider = document.createElement('hr');
-            messageDiv.appendChild(divider);
-        }
-    });
-
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-};
-    
+    // API Communication
     const sendMessage = async (text) => {
+        if (!text.trim()) return;
+        
         try {
             showLoading();
             
@@ -93,18 +64,37 @@ const addMessage = (text, isUser = false) => {
                 body: JSON.stringify({ message: text })
             });
 
-            if (!response.ok) throw new Error('Network response was not ok');
-            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
             const data = await response.json();
-            addMessage(data.reply, false);
             
-            // Скрываем модальное окно после получения ответа
-            hideVoiceModal();
+            if (data.reply) {
+                addMessage(data.reply, false);
+            }
         } catch (error) {
             console.error('Error:', error);
-            addMessage('Произошла ошибка. Попробуйте еще раз.', false);
+            addMessage('Произошла ошибка. Пожалуйста, попробуйте еще раз.', false);
         } finally {
             hideLoading();
+        }
+    };
+
+    // Loading Indicator
+    const showLoading = () => loadingIndicator.style.display = 'flex';
+    const hideLoading = () => loadingIndicator.style.display = 'none';
+
+    // Voice Modal Controls
+    const showVoiceModal = () => {
+        voiceModal.classList.add('active');
+        voiceText.textContent = 'Click to speak';
+    };
+
+    const hideVoiceModal = () => {
+        voiceModal.classList.remove('active');
+        if (isRecording && recognition) {
+            recognition.stop();
         }
     };
 
@@ -125,16 +115,11 @@ const addMessage = (text, isUser = false) => {
 
         recognition.onresult = (event) => {
             const text = event.results[0][0].transcript;
-            voiceText.textContent = text;
-            
-            // Добавляем сообщение в чат
-            addMessage(text, true);
-            
-            // Скрываем модальное окно
-            hideVoiceModal();
-            
-            // Отправляем запрос и получаем ответ
-            sendMessage(text);
+            if (text.trim()) {
+                addMessage(text, true);
+                hideVoiceModal();
+                sendMessage(text);
+            }
         };
 
         recognition.onerror = (event) => {
@@ -150,10 +135,9 @@ const addMessage = (text, isUser = false) => {
             voiceText.textContent = 'Click to speak';
         };
 
-        // Voice Modal Controls
+        // Voice Button Event Listeners
         voiceButton.addEventListener('click', showVoiceModal);
         closeModal.addEventListener('click', hideVoiceModal);
-
         startVoiceBtn.addEventListener('click', () => {
             if (!isRecording) {
                 recognition.start();
@@ -161,26 +145,18 @@ const addMessage = (text, isUser = false) => {
                 recognition.stop();
             }
         });
-
-        // Close modal on outside click
-        window.addEventListener('click', (e) => {
-            if (e.target === voiceModal) {
-                hideVoiceModal();
-            }
-        });
-
-        // Handle Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                hideVoiceModal();
-            }
-        });
     } else {
         voiceButton.style.display = 'none';
         console.log('Speech Recognition API is not supported');
     }
 
-    // Text input handlers
+    // Menu Controls
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownMenu.classList.toggle('show');
+    });
+
+    // Text Input Handlers
     sendButton.addEventListener('click', () => {
         const message = messageInput.value.trim();
         if (message) {
@@ -197,7 +173,26 @@ const addMessage = (text, isUser = false) => {
         }
     });
 
-    // Add welcome message
+    // Global Event Listeners
+    document.addEventListener('click', (e) => {
+        // Закрываем меню при клике вне его
+        if (!dropdownMenu.contains(e.target) && !menuButton.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+        }
+        // Закрываем модальное окно при клике вне его
+        if (e.target === voiceModal) {
+            hideVoiceModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideVoiceModal();
+            dropdownMenu.classList.remove('show');
+        }
+    });
+
+    // Welcome Message
     setTimeout(() => {
         addMessage('Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?', false);
     }, 500);
