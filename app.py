@@ -22,19 +22,34 @@ anthropic_client = anthropic.Anthropic(
 )
 
 def get_ai_response(text):
-    """Get response from Claude with AI learning context"""
     try:
-        message = anthropic_client.beta.messages.create(  # Изменено с messages на beta.messages
+        message = anthropic_client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             temperature=0,
-            system="You are an AI assistant designed to help beginners learn about artificial intelligence. Your primary goal is to answer questions related to AI learning and education. You will receive questions from users who are attending their first AI lesson in Visaginas. Only answer questions that are directly related to learning about artificial intelligence. For off-topic questions, respond in the appropriate language (Russian, Lithuanian, or English) indicating that the question is not related to AI learning.",
-            messages=[
-                {
-                    "role": "user",
-                    "content": text
-                }
-            ]
+            system="""You are an AI assistant designed to help beginners learn about artificial intelligence. 
+            Format your responses with clear structure:
+            
+            - Use bullet points for lists
+            - Add empty lines between paragraphs
+            - Use clear section headers followed by colons
+            - Number steps or instructions
+            - Keep paragraphs short and focused
+            - Use indentation for sub-points
+            - Add line breaks for better readability
+            
+            When answering, maintain a clear hierarchy in the information and use appropriate formatting for:
+            - Main topics
+            - Subtopics
+            - Examples
+            - Steps
+            - Tips
+            
+            Always ensure your response is well-structured and easy to read.""",
+            messages=[{
+                "role": "user",
+                "content": text
+            }]
         )
         return message.content[0].text
     except Exception as e:
