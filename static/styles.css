@@ -31,6 +31,80 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+.voice-compact {
+    background: rgba(10, 10, 26, 0.95);
+    width: 300px !important;
+    height: 300px;
+    border-radius: 50% !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 0 !important;
+    border: 2px solid rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.voice-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.mic-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+}
+
+.voice-text {
+    color: #fff;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.voice-compact .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 10;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Обновите стили модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 26, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    margin: 0 auto;
+    animation: fadeIn 0.3s ease;
+}
+
+
 .menu-button {
     width: 35px;
     height: 35px;
