@@ -21,9 +21,69 @@ document.addEventListener('DOMContentLoaded', () => {
     let recognition = null;
     let isRecording = false;
     let translations = {};
-    let currentRecognitionLang = 'lt-LT'; // Изменено на литовский по умолчанию
+    let currentRecognitionLang = 'lt-LT';
 
-    loadTranslations();
+    // ЗАМЕНИТЕ ЭТУ ФУНКЦИЮ
+    async function loadTranslations() {
+        // Определяем язык браузера
+        const browserLang = navigator.language.toLowerCase();
+        let lang = 'en';
+        
+        // Определяем какой файл переводов загружать
+        if (browserLang.startsWith('lt')) {
+            lang = 'lt';
+        } else if (browserLang.startsWith('ru')) {
+            lang = 'ru';
+        }
+        
+        const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
+            }
+            translations = await response.json();
+        } catch (error) {
+            console.error('Error loading translations:', error);
+            translations = {  // Default English translations if loading fails
+                "placeholder": "Type your message...",
+                "send": "Send",
+                "voice_modal_text": "Click to speak",
+                "voice_listening": "Listening...",
+                "voice_error": "Error. Please try again.",
+                "loading": "Processing...",
+                "welcome_message": "Hello! I am your virtual assistant for learning about artificial intelligence. How can I help you today?",
+                "error_message": "An error occurred. Please try again.",
+                "about": "About",
+                "settings": "Settings",
+                "help": "Help",
+                "brand_name": "VISAGINAS360 AI",
+                "lang": "en-US"
+            };
+        } finally {
+            updateInterfaceLanguage();
+            document.documentElement.lang = lang;
+            if (translations.lang) {
+                currentRecognitionLang = translations.lang;
+            }
+        }
+    }
+
+    function updateInterfaceLanguage() {
+        messageInput.placeholder = translations.placeholder;
+        sendButton.textContent = translations.send;
+        voiceText.textContent = translations.voice_modal_text;
+        loadingIndicator.querySelector('span').textContent = translations.loading;
+
+        brandName.textContent = translations.brand_name;
+        if (aboutLink) aboutLink.textContent = translations.about;
+        if (settingsLink) settingsLink.textContent = translations.settings;
+        if (helpLink) helpLink.textContent = translations.help;
+
+        chatMessages.innerHTML = '';
+        addMessage(translations.welcome_message, false);
+    }
 
     // Инициализация распознавания речи
     function initSpeechRecognition() {
@@ -36,16 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
         recognition = new SpeechRecognition();
         
-        // Базовые настройки
         recognition.continuous = false;
         recognition.interimResults = false;
         recognition.lang = currentRecognitionLang;
 
-        // Обработчики событий
         recognition.onstart = () => {
             isRecording = true;
             startVoiceBtn.classList.add('recording');
-            voiceText.textContent = translations.voice_listening || 'Listening...';
+            voiceText.textContent = translations.voice_listening;
         };
 
         recognition.onresult = (event) => {
@@ -59,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
-            voiceText.textContent = translations.voice_error || 'Error. Please try again.';
+            voiceText.textContent = translations.voice_error;
             isRecording = false;
             startVoiceBtn.classList.remove('recording');
         };
@@ -67,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recognition.onend = () => {
             isRecording = false;
             startVoiceBtn.classList.remove('recording');
-            voiceText.textContent = translations.voice_modal_text || 'Click to speak';
+            voiceText.textContent = translations.voice_modal_text;
         };
     }
 
@@ -117,4 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Добавляем кнопку языка перед кнопкой микрофона
     voiceButton.parentNode.insertBefore(languageButton, voiceButton);
+    // Вызываем loadTranslations при загрузке
+    loadTranslations();
 });
