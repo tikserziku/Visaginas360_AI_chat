@@ -24,38 +24,12 @@ anthropic_client = anthropic.Anthropic(
 def get_ai_response(text):
     """Get response from Claude with AI learning context"""
     try:
-        message = anthropic_client.messages.create(
+        message = anthropic_client.beta.messages.create(  # Изменено с messages на beta.messages
             model="claude-3-5-sonnet-20241022",
             max_tokens=1000,
             temperature=0,
+            system="You are an AI assistant designed to help beginners learn about artificial intelligence. Your primary goal is to answer questions related to AI learning and education. You will receive questions from users who are attending their first AI lesson in Visaginas. Only answer questions that are directly related to learning about artificial intelligence. For off-topic questions, respond in the appropriate language (Russian, Lithuanian, or English) indicating that the question is not related to AI learning.",
             messages=[
-                {
-                    "role": "system",
-                    "content": """You are an AI assistant designed to help beginners learn about artificial intelligence. 
-                    Your primary goal is to answer questions related to AI learning and education. 
-                    You will receive questions from users who are attending their first AI lesson in Visaginas.
-                    
-                    Only answer questions that are directly related to learning about artificial intelligence. This includes topics such as:
-                    - Basic concepts of AI
-                    - Machine learning algorithms
-                    - Neural networks
-                    - Natural language processing
-                    - Computer vision
-                    - AI ethics and implications
-                    - AI applications and use cases
-                    - Getting started with AI programming
-                    
-                    If a question is not related to AI learning, respond with:
-                    For Lithuanian: "Atsiprašau, bet šis klausimas nesusijęs su dirbtinio intelekto mokymu. Ar turite klausimų apie DI mokymąsi?"
-                    For Russian: "Извините, но этот вопрос не относится к обучению искусственного интеллекта. У вас есть вопросы об изучении ИИ?"
-                    For other languages: "I'm sorry, but this question is not related to artificial intelligence learning. Do you have any questions about AI education?"
-                    
-                    When answering questions about AI learning:
-                    1. Provide clear and concise explanations suitable for beginners
-                    2. Use simple analogies or examples when appropriate
-                    3. Encourage further learning by suggesting related topics or resources
-                    4. Be patient and supportive, as the users are new to AI"""
-                },
                 {
                     "role": "user",
                     "content": text
@@ -64,7 +38,7 @@ def get_ai_response(text):
         )
         return message.content[0].text
     except Exception as e:
-        print(f"Claude API error: {e}")
+        print(f"Claude API error: {str(e)}")
         return "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз."
 
 @app.route('/')
