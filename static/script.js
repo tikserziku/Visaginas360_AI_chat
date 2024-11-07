@@ -19,57 +19,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const helpLink = document.querySelector('[href="#help"]');
     const languageButtons = document.querySelectorAll('.lang-btn');
 
+    // State variables
     let recognition = null;
     let isRecording = false;
     let translations = {};
     let currentLanguage = {
-        code: 'lt',      // для переводов интерфейса
-        speech: 'lt-LT'  // для распознавания речи
+        code: 'lt',
+        speech: 'lt-LT'
     };
 
-    // Функции обработчики голосового ввода
-    function handleVoiceButtonClick(e) {
-        if (e?.type === 'touchstart') {
-            e.preventDefault();
-        }
-        showVoiceModal();
-        if (!recognition) {
-            initSpeechRecognition();
-        }
-    }
-
-    function handleStartVoiceClick(e) {
-        if (e?.type === 'touchstart') {
-            e.preventDefault();
-        }
-        
-        if (!recognition && !initSpeechRecognition()) {
-            return;
-        }
-        
-        if (!isRecording) {
-            recognition.lang = currentLanguage.speech;
-            recognition.start();
-            startVoiceBtn.setAttribute('aria-pressed', 'true');
-        } else {
-            recognition.stop();
-            startVoiceBtn.setAttribute('aria-pressed', 'false');
-        }
-    }
-
-    // Обработчики событий для голосового ввода
-    voiceButton.addEventListener('click', handleVoiceButtonClick);
-    voiceButton.addEventListener('touchstart', handleVoiceButtonClick);
-
-    startVoiceBtn.addEventListener('click', handleStartVoiceClick);
-    startVoiceBtn.addEventListener('touchstart', handleStartVoiceClick);
-
+    // Core interface functions
     function showVoiceModal() {
         voiceModal.classList.add('active');
         voiceModal.removeAttribute('hidden');
         voiceText.textContent = translations.voice_modal_text;
         startVoiceBtn.setAttribute('aria-pressed', 'false');
-        // Предотвращаем скролл на мобильных устройствах
         document.body.style.overflow = 'hidden';
     }
 
@@ -80,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
             recognition.stop();
             startVoiceBtn.setAttribute('aria-pressed', 'false');
         }
-        // Возвращаем скролл
         document.body.style.overflow = '';
     }
 
@@ -96,139 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
     }
 
-    
-    function updateInterfaceLanguage() {
-        messageInput.placeholder = translations.placeholder;
-        sendButton.textContent = translations.send;
-        voiceText.textContent = translations.voice_modal_text;
-        if (loadingIndicator.querySelector('span')) {
-            loadingIndicator.querySelector('span').textContent = translations.loading;
-        }
-
-        if (brandName) brandName.textContent = translations.brand_name;
-        if (aboutLink) aboutLink.textContent = translations.about;
-        if (settingsLink) settingsLink.textContent = translations.settings;
-        if (helpLink) helpLink.textContent = translations.help;
-
-        // Очищаем чат и добавляем приветственное сообщение только при первой загрузке
-        if (chatMessages.children.length === 0) {
-            addMessage(translations.welcome_message, false);
-        }
-    }
-
-    async function loadTranslations(lang = 'lt') {
-        const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
-            }
-            translations = await response.json();
-        } catch (error) {
-            console.error('Error loading translations:', error);
-            translations = {
-                "placeholder": "Type your message...",
-                "send": "Send",
-                "voice_modal_text": "Click to speak",
-                "voice_listening": "Listening...",
-                "voice_error": "Error. Please try again.",
-                "loading": "Processing...",
-                "welcome_message": "Hello! I am your virtual assistant for learning about artificial intelligence. How can I help you today?",
-                "error_message": "An error occurred. Please try again.",
-                "about": "About",
-                "settings": "Settings",
-                "help": "Help",
-                "brand_name": "VISAGINAS360 AI"
-            };
-        } finally {
-            updateInterfaceLanguage();
-            document.documentElement.lang = lang;
-        }
-    }
-
-    function updateLanguage(langCode) {
-        currentLanguage.code = langCode;
-        
-        // Обновляем язык распознавания речи
-        switch(langCode) {
-            case 'lt':
-                currentLanguage.speech = 'lt-LT';
-                break;
-            case 'ru':
-                currentLanguage.speech = 'ru-RU';
-                break;
-            case 'en':
-                currentLanguage.speech = 'en-US';
-                break;
-        }
-
-        // Обновляем активную кнопку
-        languageButtons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.lang === langCode);
-        });
-
-        // Обновляем язык распознавания если оно инициализировано
-        if (recognition) {
-            recognition.lang = currentLanguage.speech;
-        }
-
-        // Загружаем переводы для нового языка
-        loadTranslations(langCode);
-    }
-
-    // Обработчики кнопок языка
-    languageButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            updateLanguage(btn.dataset.lang);
-        });
-    });
-
-    function initSpeechRecognition() {
-        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            voiceButton.style.display = 'none';
-            console.log('Speech Recognition API is not supported');
-            return false;
-        }
-
-        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-        recognition = new SpeechRecognition();
-        
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = currentLanguage.speech;
-
-        recognition.onstart = () => {
-            isRecording = true;
-            startVoiceBtn.classList.add('recording');
-            voiceText.textContent = translations.voice_listening;
-        };
-
-        recognition.onresult = (event) => {
-            const text = event.results[0][0].transcript;
-            if (text.trim()) {
-                addMessage(text, true);
-                hideVoiceModal();
-                sendMessage(text);
-            }
-        };
-
-        recognition.onerror = (event) => {
-            console.error('Speech recognition error:', event.error);
-            voiceText.textContent = translations.voice_error;
-            isRecording = false;
-            startVoiceBtn.classList.remove('recording');
-        };
-
-        recognition.onend = () => {
-            isRecording = false;
-            startVoiceBtn.classList.remove('recording');
-            voiceText.textContent = translations.voice_modal_text;
-        };
-
-        return true;
-    }
-
+    // Message handling functions
     function formatMessage(text) {
         if (!text) return '';
         text = text.replace(/^- /gm, '• ');
@@ -285,37 +116,147 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function showLoading() {
-        loadingIndicator.style.display = 'flex';
-    }
+    // Language and translations handling
+    async function loadTranslations(lang = 'lt') {
+        const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
 
-    function hideLoading() {
-        loadingIndicator.style.display = 'none';
-    }
-
-    function showVoiceModal() {
-        voiceModal.classList.add('active');
-        voiceText.textContent = translations.voice_modal_text;
-    }
-
-    function hideVoiceModal() {
-        voiceModal.classList.remove('active');
-        if (isRecording && recognition) {
-            recognition.stop();
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
+            }
+            translations = await response.json();
+        } catch (error) {
+            console.error('Error loading translations:', error);
+            translations = {
+                "placeholder": "Type your message...",
+                "send": "Send",
+                "voice_modal_text": "Click to speak",
+                "voice_listening": "Listening...",
+                "voice_error": "Error. Please try again.",
+                "loading": "Processing...",
+                "welcome_message": "Hello! I am your virtual assistant for learning about artificial intelligence. How can I help you today?",
+                "error_message": "An error occurred. Please try again.",
+                "about": "About",
+                "settings": "Settings",
+                "help": "Help",
+                "brand_name": "VISAGINAS360 AI"
+            };
+        } finally {
+            updateInterfaceLanguage();
+            document.documentElement.lang = lang;
         }
     }
 
-    // Event Listeners
-    voiceButton.addEventListener('click', () => {
+    function updateInterfaceLanguage() {
+        messageInput.placeholder = translations.placeholder;
+        sendButton.textContent = translations.send;
+        voiceText.textContent = translations.voice_modal_text;
+        if (loadingIndicator.querySelector('span')) {
+            loadingIndicator.querySelector('span').textContent = translations.loading;
+        }
+
+        if (brandName) brandName.textContent = translations.brand_name;
+        if (aboutLink) aboutLink.textContent = translations.about;
+        if (settingsLink) settingsLink.textContent = translations.settings;
+        if (helpLink) helpLink.textContent = translations.help;
+
+        if (chatMessages.children.length === 0) {
+            addMessage(translations.welcome_message, false);
+        }
+    }
+
+    function updateLanguage(langCode) {
+        if (!langCode) return;
+        
+        currentLanguage.code = langCode;
+        
+        switch(langCode) {
+            case 'lt':
+                currentLanguage.speech = 'lt-LT';
+                break;
+            case 'ru':
+                currentLanguage.speech = 'ru-RU';
+                break;
+            case 'en':
+                currentLanguage.speech = 'en-US';
+                break;
+            default:
+                currentLanguage.speech = 'en-US';
+        }
+
+        languageButtons.forEach(btn => {
+            const isActive = btn.dataset.lang === langCode;
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-checked', isActive.toString());
+        });
+
+        if (recognition) {
+            recognition.lang = currentLanguage.speech;
+        }
+
+        loadTranslations(langCode);
+        localStorage.setItem('preferredLanguage', langCode);
+    }
+
+    // [Продолжение следует в части 2...]
+     // Speech Recognition
+    function initSpeechRecognition() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            voiceButton.style.display = 'none';
+            console.log('Speech Recognition API is not supported');
+            return false;
+        }
+
+        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = currentLanguage.speech;
+
+        recognition.onstart = () => {
+            isRecording = true;
+            startVoiceBtn.classList.add('recording');
+            voiceText.textContent = translations.voice_listening;
+        };
+
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            if (text.trim()) {
+                addMessage(text, true);
+                hideVoiceModal();
+                sendMessage(text);
+            }
+        };
+
+        recognition.onerror = handleSpeechError;
+
+        recognition.onend = () => {
+            isRecording = false;
+            startVoiceBtn.classList.remove('recording');
+            voiceText.textContent = translations.voice_modal_text;
+        };
+
+        return true;
+    }
+
+    // Voice Handlers
+    function handleVoiceButtonClick(e) {
+        if (e?.type === 'touchstart') {
+            e.preventDefault();
+        }
         showVoiceModal();
         if (!recognition) {
             initSpeechRecognition();
         }
-    });
+    }
 
-    closeModal.addEventListener('click', hideVoiceModal);
-
-    startVoiceBtn.addEventListener('click', () => {
+    function handleStartVoiceClick(e) {
+        if (e?.type === 'touchstart') {
+            e.preventDefault();
+        }
+        
         if (!recognition && !initSpeechRecognition()) {
             return;
         }
@@ -323,102 +264,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isRecording) {
             recognition.lang = currentLanguage.speech;
             recognition.start();
+            startVoiceBtn.setAttribute('aria-pressed', 'true');
         } else {
             recognition.stop();
+            startVoiceBtn.setAttribute('aria-pressed', 'false');
         }
-    });
+    }
 
-    sendButton.addEventListener('click', () => {
-        const message = messageInput.value.trim();
-        if (message) {
-            addMessage(message, true);
-            sendMessage(message);
-            messageInput.value = '';
-        }
-    });
-
-    messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendButton.click();
-        }
-    });
-
-    menuButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdownMenu?.classList.toggle('show');
-    });
-
-    // Global event listeners
-    document.addEventListener('click', (e) => {
-        if (dropdownMenu && !dropdownMenu.contains(e.target) && !menuButton.contains(e.target)) {
-            dropdownMenu.classList.remove('show');
-        }
-        if (e.target === voiceModal) {
-            hideVoiceModal();
-        }
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            hideVoiceModal();
-            if (dropdownMenu) {
-                dropdownMenu.classList.remove('show');
-            }
-        }
-    });
-    // Обработка touch событий для закрытия модального окна
-    let touchStartY = 0;
-    voiceModal.addEventListener('touchstart', (e) => {
-        if (e.target === voiceModal) {
-            touchStartY = e.touches[0].clientY;
-        }
-    }, { passive: true });
-
-    voiceModal.addEventListener('touchmove', (e) => {
-        if (e.target === voiceModal) {
-            const touchEndY = e.touches[0].clientY;
-            const diff = touchEndY - touchStartY;
-            if (Math.abs(diff) > 50) {
-                hideVoiceModal();
-            }
-        }
-    }, { passive: true });
-
-    // Улучшенная обработка клавиатуры
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const message = messageInput.value.trim();
-            if (message) {
-                addMessage(message, true);
-                sendMessage(message);
-                messageInput.value = '';
-                messageInput.focus();
-            }
-        }
-    });
-
-    // Предотвращение случайных нажатий
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', (e) => {
-        const now = Date.now();
-        if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, false);
-
-    // Обработка offline/online состояний
-    window.addEventListener('online', () => {
-        addMessage('Connected to network', false);
-    });
-
-    window.addEventListener('offline', () => {
-        addMessage('Lost network connection', false);
-    });
-
-    // Обработка ошибок распознавания речи
     function handleSpeechError(error) {
         console.error('Speech recognition error:', error);
         
@@ -440,23 +292,116 @@ document.addEventListener('DOMContentLoaded', () => {
         startVoiceBtn.setAttribute('aria-pressed', 'false');
     }
 
-    // Инициализация с проверкой поддержки функций
-    function init() {
-        if ('speechSynthesis' in window) {
-            speechSynthesis.getVoices(); // Предзагрузка голосов
+    // Event Listeners
+    voiceButton.addEventListener('click', handleVoiceButtonClick);
+    voiceButton.addEventListener('touchstart', handleVoiceButtonClick, { passive: false });
+
+    startVoiceBtn.addEventListener('click', handleStartVoiceClick);
+    startVoiceBtn.addEventListener('touchstart', handleStartVoiceClick, { passive: false });
+
+    closeModal.addEventListener('click', hideVoiceModal);
+
+    sendButton.addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        if (message) {
+            addMessage(message, true);
+            sendMessage(message);
+            messageInput.value = '';
+            messageInput.focus();
+        }
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendButton.click();
+        }
+    });
+
+    menuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = dropdownMenu.classList.contains('show');
+        dropdownMenu?.classList.toggle('show');
+        menuButton.setAttribute('aria-expanded', (!isExpanded).toString());
+        dropdownMenu.setAttribute('aria-hidden', isExpanded.toString());
+    });
+
+    languageButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            updateLanguage(btn.dataset.lang);
+        });
+    });
+
+    // Touch Events
+    let touchStartY = 0;
+    voiceModal.addEventListener('touchstart', (e) => {
+        if (e.target === voiceModal) {
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    voiceModal.addEventListener('touchmove', (e) => {
+        if (e.target === voiceModal) {
+            const touchEndY = e.touches[0].clientY;
+            const diff = touchEndY - touchStartY;
+            if (Math.abs(diff) > 50) {
+                hideVoiceModal();
+            }
+        }
+    }, { passive: true });
+
+    // Global Event Listeners
+    document.addEventListener('click', (e) => {
+        if (dropdownMenu?.classList.contains('show') && 
+            !dropdownMenu.contains(e.target) && 
+            !menuButton.contains(e.target)) {
+            dropdownMenu.classList.remove('show');
+            menuButton.setAttribute('aria-expanded', 'false');
+            dropdownMenu.setAttribute('aria-hidden', 'true');
         }
         
-        updateLanguage('lt');
-        
-        // Проверка поддержки необходимых API
-        if (!('fetch' in window)) {
-            addMessage('Your browser might not support all features', false);
+        if (e.target === voiceModal) {
+            hideVoiceModal();
         }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (voiceModal.classList.contains('active')) {
+                hideVoiceModal();
+            }
+            if (dropdownMenu?.classList.contains('show')) {
+                dropdownMenu.classList.remove('show');
+                menuButton.setAttribute('aria-expanded', 'false');
+                dropdownMenu.setAttribute('aria-hidden', 'true');
+            }
+        }
+    });
+
+    // Mobile Double-tap Prevention
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+            e.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+
+    // Online/Offline Handlers
+    window.addEventListener('online', () => {
+        addMessage('Connected to network', false);
+    });
+
+    window.addEventListener('offline', () => {
+        addMessage('Lost network connection', false);
+    });
+
+    // Initialization
+    const savedLanguage = localStorage.getItem('preferredLanguage') || 'lt';
+    updateLanguage(savedLanguage);
+
+    if (!('fetch' in window)) {
+        addMessage('Your browser might not support all features', false);
     }
-
-    init();
-
-    
-    // Initialize
-    updateLanguage('lt');
-});
+});   
