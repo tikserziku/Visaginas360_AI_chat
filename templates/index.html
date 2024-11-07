@@ -2,57 +2,80 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="VISAGINAS360 AI - Ваш виртуальный помощник">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="VISAGINAS360 AI - Ваш виртуальный помощник по искусственному интеллекту">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>VISAGINAS360 AI Assistant</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <nav class="navbar">
-        <button class="menu-button" id="menuButton">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Menu">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <button class="menu-button" id="menuButton" aria-label="Open menu" aria-controls="dropdownMenu" aria-expanded="false">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Menu icon" width="35" height="35">
         </button>
-        <span class="brand-name">VISAGINAS360 AI</span>
-        <div class="dropdown-menu" id="dropdownMenu">
-            <a href="#about">О проекте</a>
-            <a href="#settings">Настройки</a>
-            <a href="#help">Помощь</a>
+        <span class="brand-name" role="heading" aria-level="1">VISAGINAS360 AI</span>
+        <div class="dropdown-menu" id="dropdownMenu" role="menu" aria-hidden="true">
+            <a href="#about" role="menuitem">О проекте</a>
+            <a href="#settings" role="menuitem">Настройки</a>
+            <a href="#help" role="menuitem">Помощь</a>
         </div>
     </nav>
     
-    <main class="chat-container">
-        <div id="chat-messages"></div>
-        <div class="input-container">
-            <div class="language-selector">
-                <button class="lang-btn" data-lang="lt">LT</button>
-                <button class="lang-btn" data-lang="ru">RU</button>
-                <button class="lang-btn" data-lang="en">EN</button>
+    <main class="chat-container" role="main">
+        <div id="chat-messages" role="log" aria-live="polite" aria-atomic="false"></div>
+        <div class="input-container" role="group" aria-label="Message input">
+            <div class="language-selector" role="radiogroup" aria-label="Select language">
+                <button class="lang-btn" data-lang="lt" role="radio" aria-checked="true">LT</button>
+                <button class="lang-btn" data-lang="ru" role="radio" aria-checked="false">RU</button>
+                <button class="lang-btn" data-lang="en" role="radio" aria-checked="false">EN</button>
             </div>
-            <button id="voice-button" class="input-button">
-                <span>🎤</span>
+            <button id="voice-button" class="input-button" aria-label="Start voice input">
+                <span aria-hidden="true">🎤</span>
             </button>
-            <input type="text" id="message-input" placeholder="Type your message...">
-            <button id="send-button" class="input-button">📤</button>
+            <input type="text" 
+                   id="message-input" 
+                   placeholder="Type your message..." 
+                   aria-label="Message input"
+                   autocomplete="off"
+                   enterkeyhint="send">
+            <button id="send-button" class="input-button" aria-label="Send message">
+                <span aria-hidden="true">📤</span>
+            </button>
         </div>
     </main>
 
-    <div id="voice-modal" class="modal">
+    <div id="voice-modal" 
+         class="modal" 
+         role="dialog" 
+         aria-label="Voice input"
+         aria-modal="true"
+         hidden>
         <div class="modal-content voice-compact">
-            <span class="close">×</span>
-            <button id="start-voice" class="voice-circle-button" role="button" aria-label="Start voice recording">
+            <button class="close" aria-label="Close voice input">×</button>
+            <button id="start-voice" 
+                    class="voice-circle-button" 
+                    role="button" 
+                    aria-label="Start voice recording"
+                    aria-pressed="false">
                 <span class="mic-icon" aria-hidden="true">🎤</span>
-                <span class="recording-indicator"></span>
+                <span class="recording-indicator" aria-hidden="true"></span>
             </button>
-            <div id="voice-text" class="voice-text"></div>
+            <div id="voice-text" class="voice-text" aria-live="polite"></div>
         </div>
     </div>
 
-    <div id="loading-indicator">
-        <div class="spinner"></div>
+    <div id="loading-indicator" 
+         role="alert" 
+         aria-busy="true"
+         hidden>
+        <div class="spinner" aria-hidden="true"></div>
         <span>Processing...</span>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
