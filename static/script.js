@@ -13,9 +13,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingIndicator = document.getElementById('loading-indicator');
     const menuButton = document.getElementById('menuButton');
     const dropdownMenu = document.getElementById('dropdownMenu');
+    const brandName = document.querySelector('.brand-name'); // Brand name element
+    const aboutLink = document.querySelector('[href="#about"]'); // About link
+    const settingsLink = document.querySelector('[href="#settings"]'); // Settings link
+    const helpLink = document.querySelector('[href="#help"]'); // Help link
+
 
     let recognition = null;
     let isRecording = false;
+    let translations = {};
+
+
+    async function loadTranslations() {
+        const lang = navigator.language.startsWith('ru') ? 'ru' : 'en';
+        const url = `/static/locales/translations${lang === 'en' ? '_en' : ''}.json`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            translations = await response.json();
+            updateInterfaceLanguage();
+        } catch (error) {
+            console.error('Error loading translations:', error);
+            translations = {  // Default Russian translations
+                "placeholder": "Введите ваше сообщение...",
+                "send": "📤",
+                "voice_modal_text": "Click to speak",
+                "voice_listening": "Listening...",
+                "voice_error": "Error. Please try again.",
+                "loading": "Обработка...",
+                "welcome_message": "Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?",
+                "error_message": "Произошла ошибка. Пожалуйста, попробуйте еще раз.",
+                "about": "О проекте",
+                "settings": "Настройки",
+                "help": "Помощь",
+                "brand_name": "VISAGINAS360 AI"
+
+            };
+            updateInterfaceLanguage();
+        }
+    }
+
+
+    function updateInterfaceLanguage() {
+        messageInput.placeholder = translations.placeholder;
+        sendButton.textContent = translations.send;
+        voiceText.textContent = translations.voice_modal_text;
+        loadingIndicator.querySelector('span').textContent = translations.loading;
+
+        brandName.textContent = translations.brand_name;
+        aboutLink.textContent = translations.about;
+        settingsLink.textContent = translations.settings;
+        helpLink.textContent = translations.help;
+
+
+        // Clear previous welcome message and add the translated one.
+        chatMessages.innerHTML = ''; // added to clear any existing messages
+        addMessage(translations.welcome_message, false);
+
+
+    }
+
+
 
     // Message Handling Functions
     const formatMessage = (text) => {
@@ -192,6 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+loadTranslations(); // Call loadTranslations to initiate localization
+    
     // Welcome Message
     setTimeout(() => {
         addMessage('Привет! Я ваш виртуальный помощник по изучению искусственного интеллекта. Как я могу помочь вам сегодня?', false);
