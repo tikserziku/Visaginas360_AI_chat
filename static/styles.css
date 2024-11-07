@@ -396,6 +396,42 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.voice-circle-button::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    bottom: -15px;
+    left: -15px;
+    border-radius: 50%;
+}
+
+.voice-circle-button:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    .voice-circle-button {
+        width: 100px;
+        height: 100px;
+    }
+
+    .mic-icon {
+        font-size: 60px;
+    }
+    
+    /* Увеличиваем зону касания на мобильных */
+    .voice-circle-button::before {
+        top: -20px;
+        right: -20px;
+        bottom: -20px;
+        left: -20px;
+    }
 }
 
 .mic-icon {
