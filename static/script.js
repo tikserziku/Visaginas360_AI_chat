@@ -134,25 +134,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // Speech Recognition
     // Возвращаемся к простой версии
     function initSpeechRecognition() {
+    try {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             voiceButton.style.display = 'none';
             console.log('Speech Recognition API is not supported');
             return false;
         }
-    
+
         const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
         recognition = new SpeechRecognition();
         
         recognition.continuous = false;
         recognition.interimResults = false;
         recognition.lang = currentLanguage.speech;
-    
+
         recognition.onstart = () => {
             isRecording = true;
             startVoiceBtn.classList.add('recording');
             voiceText.textContent = translations.voice_listening;
         };
-    
+
         recognition.onresult = (event) => {
             const text = event.results[0][0].transcript;
             if (text.trim()) {
@@ -161,21 +162,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendMessage(text);
             }
         };
-    
+
         recognition.onerror = handleSpeechError;
-    
+
         recognition.onend = () => {
             isRecording = false;
             startVoiceBtn.classList.remove('recording');
             voiceText.textContent = translations.voice_modal_text;
         };
-    
+
         return true;
     } catch (error) {
-            console.error('Error initializing speech recognition:', error);
-            return false;
-        }
+        console.error('Error initializing speech recognition:', error);
+        return false;
     }
+}
 
     // Voice Handlers
     function handleVoiceButtonClick(e) {
@@ -207,8 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 
-    function handleSpeechError(error) {
+   function handleSpeechError(error) {
     console.error('Speech recognition error:', error);
+    debugLog('Speech error:', error.error);
     
     let errorMessage;
     switch (error.error) {
