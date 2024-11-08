@@ -288,63 +288,70 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateLanguage(langCode) {
-        if (!langCode) return;
-        
-        currentLanguage.code = langCode;
-        debugLog('Updating language to:', langCode);
-        
-        // Update the language button text
-        const langButton = document.getElementById('lang-toggle');
-        if (langButton) {
-            langButton.querySelector('span').textContent = langCode.toUpperCase();
+   function updateLanguage(langCode) {
+    if (!langCode) return;
+    
+    currentLanguage.code = langCode;
+    debugLog('Updating language to:', langCode);
+    
+    // Update the language button text
+    const langButton = document.getElementById('lang-toggle');
+    if (langButton) {
+        const span = langButton.querySelector('span');
+        if (span) {
+            span.textContent = langCode.toUpperCase();
         }
-        
-        switch(langCode) {
-            case 'lt':
-                currentLanguage.speech = 'lt-LT';
-                break;
-            case 'ru':
-                currentLanguage.speech = 'ru-RU';
-                break;
-            case 'en':
-                currentLanguage.speech = 'en-US';
-                break;
-            default:
-                currentLanguage.speech = 'en-US';
-        }
+    }
+    
+    switch(langCode) {
+        case 'lt':
+            currentLanguage.speech = 'lt-LT';
+            break;
+        case 'ru':
+            currentLanguage.speech = 'ru-RU';
+            break;
+        case 'en':
+            currentLanguage.speech = 'en-US';
+            break;
+        default:
+            currentLanguage.speech = 'en-US';
+    }
 
+    if (recognition) {
+        try {
+            recognition.lang = currentLanguage.speech;
+            debugLog('Updated recognition language to:', currentLanguage.speech);
+        } catch (error) {
+            console.error('Error updating recognition language:', error);
+        }
+    }
+
+    // Load translations and update interface
+    loadTranslations(langCode).then(() => {
         languageButtons.forEach(btn => {
             const isActive = btn.dataset.lang === langCode;
             btn.classList.toggle('active', isActive);
             btn.setAttribute('aria-checked', isActive.toString());
         });
-
-        if (recognition) {
-            try {
-                recognition.lang = currentLanguage.speech;
-                debugLog('Updated recognition language to:', currentLanguage.speech);
-            } catch (error) {
-                console.error('Error updating recognition language:', error);
-            }
-        }
-
-        loadTranslations(langCode);
+        updateInterfaceLanguage();
         localStorage.setItem('preferredLanguage', langCode);
-    }
+    });
+}
 
     // Language toggle button click handler
     document.getElementById('lang-toggle').addEventListener('click', (event) => {
-        const currentLang = currentLanguage.code;
-        let nextLang;
+    debugLog('Language button clicked');
+    const currentLang = currentLanguage.code;
+    let nextLang;
 
-        if (currentLang === 'lt') nextLang = 'ru';
-        else if (currentLang === 'ru') nextLang = 'en';
-        else nextLang = 'lt';
+    if (currentLang === 'lt') nextLang = 'ru';
+    else if (currentLang === 'ru') nextLang = 'en';
+    else nextLang = 'lt';
 
-        updateLanguage(nextLang);
-        event.stopPropagation();
-    });
+    debugLog('Switching language from', currentLang, 'to', nextLang);
+    updateLanguage(nextLang);
+    event.stopPropagation();
+});
 
     // Event Listeners
     voiceButton.addEventListener('click', handleVoiceButtonClick);
@@ -453,20 +460,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialization
     const savedLanguage = localStorage.getItem('preferredLanguage') || 'lt';
     debugLog('Initializing with saved language:', savedLanguage);
-    updateLanguage(savedLanguage);
+    
+    // Initialize button text
+    const langButton = document.getElementById('lang-toggle');
+    if (langButton) {
+        langButton.querySelector('span').textContent = savedLanguage.toUpperCase();
+    }
+    
+    // Load initial translations and initialize interface
+    loadTranslations(savedLanguage).then(() => {
+        updateLanguage(savedLanguage);
+        
+        // Initialize speech recognition if available
+        if (('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)) {
+            debugLog('Speech recognition is available');
+            initSpeechRecognition();
+        } else {
+            debugLog('Speech recognition is not available');
+            voiceButton.style.display = 'none';
+        }
+    });
 
     // Check browser support
     if (!('fetch' in window)) {
         debugLog('Fetch API not supported');
         addMessage('Your browser might not support all features', false);
-    }
-
-    // Initialize speech recognition if available
-    if (('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)) {
-        debugLog('Speech recognition is available');
-        initSpeechRecognition();
-    } else {
-        debugLog('Speech recognition is not available');
-        voiceButton.style.display = 'none';
     }
 });
