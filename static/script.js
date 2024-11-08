@@ -1,6 +1,15 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
+    debugLog('DOM Content Loaded');
+    debugLog('Checking elements:', {
+        messageInput: !!messageInput,
+        sendButton: !!sendButton,
+        voiceButton: !!voiceButton,
+        chatMessages: !!chatMessages,
+        voiceModal: !!voiceModal,
+        langButton: !!document.getElementById('lang-toggle')
+});
     // DOM Elements
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
@@ -229,14 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startVoiceBtn.classList.remove('recording');
     startVoiceBtn.setAttribute('aria-pressed', 'false');
 }
-        
-        debugLog('Speech error:', error.error);
-        voiceText.textContent = errorMessage;
-        isRecording = false;
-        startVoiceBtn.classList.remove('recording');
-        startVoiceBtn.setAttribute('aria-pressed', 'false');
-    }
-
+                
     // Language and translations handling
     async function loadTranslations(lang = 'lt') {
     const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
@@ -457,20 +459,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initialization
-    const savedLanguage = localStorage.getItem('preferredLanguage') || 'lt';
-    debugLog('Initializing with saved language:', savedLanguage);
-    
-    // Initialize button text
-    const langButton = document.getElementById('lang-toggle');
-    if (langButton) {
-        langButton.querySelector('span').textContent = savedLanguage.toUpperCase();
-    }
-    
-    // Load initial translations and initialize interface
-    loadTranslations(savedLanguage).then(() => {
-        updateLanguage(savedLanguage);
+const savedLanguage = localStorage.getItem('preferredLanguage') || 'lt';
+debugLog('Initializing with saved language:', savedLanguage);
+
+// First load translations
+loadTranslations(savedLanguage)
+    .then(() => {
+        // Then update interface
+        updateInterfaceLanguage();
         
-        // Initialize speech recognition if available
+        // Then update language settings
+        currentLanguage.code = savedLanguage;
+        switch(savedLanguage) {
+            case 'lt':
+                currentLanguage.speech = 'lt-LT';
+                break;
+            case 'ru':
+                currentLanguage.speech = 'ru-RU';
+                break;
+            case 'en':
+                currentLanguage.speech = 'en-US';
+                break;
+            default:
+                currentLanguage.speech = 'lt-LT';
+        }
+        
+        // Update language button
+        const langButton = document.getElementById('lang-toggle');
+        if (langButton) {
+            const span = langButton.querySelector('span');
+            if (span) {
+                span.textContent = savedLanguage.toUpperCase();
+            }
+        }
+        
+        // Initialize speech recognition
         if (('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window)) {
             debugLog('Speech recognition is available');
             initSpeechRecognition();
@@ -478,11 +501,14 @@ document.addEventListener('DOMContentLoaded', () => {
             debugLog('Speech recognition is not available');
             voiceButton.style.display = 'none';
         }
+    })
+    .catch(error => {
+        console.error('Error during initialization:', error);
+        debugLog('Initialization error:', error);
     });
 
-    // Check browser support
-    if (!('fetch' in window)) {
-        debugLog('Fetch API not supported');
-        addMessage('Your browser might not support all features', false);
-    }
-});
+// Check browser support
+if (!('fetch' in window)) {
+    debugLog('Fetch API not supported');
+    addMessage('Your browser might not support all features', false);
+}
