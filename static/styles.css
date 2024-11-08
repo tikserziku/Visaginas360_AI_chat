@@ -119,6 +119,7 @@ body {
   max-width: 500px;
   width: 90%;
   padding: 10px;
+  transform: translateX(-50%);
   background: rgba(20, 20, 40, 0.9);
   display: flex;
   gap: 10px;
