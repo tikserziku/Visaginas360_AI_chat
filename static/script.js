@@ -166,65 +166,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateLanguage(langCode) {
-        if (!langCode) return;
-        
-        currentLanguage.code = langCode;
-        
-        switch(langCode) {
-            case 'lt':
-                currentLanguage.speech = 'lt-LT';
-                break;
-            case 'ru':
-                currentLanguage.speech = 'ru-RU';
-                break;
-            case 'en':
-                currentLanguage.speech = 'en-US';
-                break;
-            default:
-                currentLanguage.speech = 'en-US';
-                
-        document.getElementById('lang-toggle').addEventListener('click', (event) => {
-            // Cycle through languages
-            const currentLang = currentLanguage.code;
-            let nextLang;
-        
-            if (currentLang === 'lt') nextLang = 'ru';
-            else if (currentLang === 'ru') nextLang = 'en';
-            else nextLang = 'lt';
-        
-            updateLanguage(nextLang);  // Call updateLanguage with the new language code
-            event.stopPropagation(); // Prevent dropdown from closing
-        });
-
-        languageButtons.forEach(btn => {
-            const isActive = btn.dataset.lang === langCode;
-            btn.classList.toggle('active', isActive);
-            btn.setAttribute('aria-checked', isActive.toString());
-        });
-
-        if (recognition) {
-            recognition.lang = currentLanguage.speech;
-        }
-
-        loadTranslations(langCode);
-        localStorage.setItem('preferredLanguage', langCode);
-    }
-        // Language toggle button click handler
-        document.getElementById('lang-toggle').addEventListener('click', (event) => {
-            // Cycle through languages
-            const currentLang = currentLanguage.code;
-            let nextLang;
+function updateLanguage(langCode) {
+    if (!langCode) return;
     
-            if (currentLang === 'lt') nextLang = 'ru';
-            else if (currentLang === 'ru') nextLang = 'en';
-            else nextLang = 'lt';
+    currentLanguage.code = langCode;
+    
+    // Update the language button text
+    const langButton = document.getElementById('lang-toggle');
+    if (langButton) {
+        langButton.querySelector('span').textContent = langCode.toUpperCase();
+    }
+    
+    switch(langCode) {
+        case 'lt':
+            currentLanguage.speech = 'lt-LT';
+            break;
+        case 'ru':
+            currentLanguage.speech = 'ru-RU';
+            break;
+        case 'en':
+            currentLanguage.speech = 'en-US';
+            break;
+        default:
+            currentLanguage.speech = 'en-US';
+    }
 
-
-            updateLanguage(nextLang);  // Call updateLanguage with the new language code
-            event.stopPropagation(); // Prevent dropdown from closing
-     
+    languageButtons.forEach(btn => {
+        const isActive = btn.dataset.lang === langCode;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-checked', isActive.toString());
     });
+
+    if (recognition) {
+        recognition.lang = currentLanguage.speech;
+    }
+
+    loadTranslations(langCode);
+    localStorage.setItem('preferredLanguage', langCode);
+}
+
+// Language toggle button click handler
+document.getElementById('lang-toggle').addEventListener('click', (event) => {
+    const currentLang = currentLanguage.code;
+    let nextLang;
+
+    if (currentLang === 'lt') nextLang = 'ru';
+    else if (currentLang === 'ru') nextLang = 'en';
+    else nextLang = 'lt';
+
+    updateLanguage(nextLang);
+    event.stopPropagation();
+});
+
+// Initialize button text after page load
+document.getElementById('lang-toggle').querySelector('span').textContent = currentLanguage.code.toUpperCase();
     // [Продолжение следует в части 2...]
      // Speech Recognition
     function initSpeechRecognition() {
