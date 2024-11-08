@@ -1,15 +1,6 @@
 'use strict';
 
 document.addEventListener('DOMContentLoaded', () => {
-    debugLog('DOM Content Loaded');
-    debugLog('Checking elements:', {
-        messageInput: !!messageInput,
-        sendButton: !!sendButton,
-        voiceButton: !!voiceButton,
-        chatMessages: !!chatMessages,
-        voiceModal: !!voiceModal,
-        langButton: !!document.getElementById('lang-toggle')
-});
     // DOM Elements
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
@@ -26,16 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const aboutLink = document.querySelector('[href="#about"]');
     const settingsLink = document.querySelector('[href="#settings"]');
     const helpLink = document.querySelector('[href="#help"]');
+    const langButton = document.getElementById('lang-toggle');
     const languageButtons = document.querySelectorAll('.lang-btn');
-
-    // State variables
-    let recognition = null;
-    let isRecording = false;
-    let translations = {};
-    let currentLanguage = {
-        code: 'lt',
-        speech: 'lt-LT'
-    };
 
     // Debug mode
     const DEBUG = true;
@@ -47,6 +30,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Debug: ${message}`);
             }
         }
+    }
+
+    // Check if all required elements are present
+    debugLog('DOM Content Loaded');
+    debugLog('Checking elements:', {
+        messageInput: !!messageInput,
+        sendButton: !!sendButton,
+        voiceButton: !!voiceButton,
+        chatMessages: !!chatMessages,
+        voiceModal: !!voiceModal,
+        langButton: !!langButton,
+        startVoiceBtn: !!startVoiceBtn,
+        voiceText: !!voiceText,
+        loadingIndicator: !!loadingIndicator
+    });
+
+    // Check if any required elements are missing
+    if (!messageInput || !sendButton || !voiceButton || !chatMessages || !voiceModal || !langButton || !startVoiceBtn || !voiceText || !loadingIndicator) {
+        console.error('Some required DOM elements are missing');
+        return; // Stop execution if elements are missing
     }
 
     // Core interface functions
