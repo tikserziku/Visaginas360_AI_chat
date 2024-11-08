@@ -93,7 +93,7 @@ def get_invitation_message(language):
     }
     
     whatsapp_links = {
-        lang: f"https://wa.me/{phone_number}?text={urllib.parse.quote(msg)}" 
+        lang: f"https://wa.me/{phone_number}?text={urllib.parse.quote(msg)}"
         for lang, msg in messages.items()
     }
     
