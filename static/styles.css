@@ -116,7 +116,6 @@ body {
   position: fixed;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
   max-width: 500px;
   width: 90%;
   padding: 10px;
