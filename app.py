@@ -30,6 +30,51 @@ except Exception as e:
     logger.exception(f"Error initializing Anthropic client: {e}")
     anthropic_client = None
 
+def normalize_text(text):
+    """Нормализует текст, удаляя специальные символы и лишние пробелы"""
+    if not text:
+        return ""
+    text = re.sub(r'[^\w\s\u0400-\u04FF\u0100-\u017F]', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip().lower()
+
+def detect_language(text):
+    if not text:
+        return "en"
+
+    normalized_text = normalize_text(text)
+    
+    lt_specific = set('ąčęėįšųūž')
+    ru_specific = set('абвгдеёжзийклмнопрстуфхцчшщъыьэюя')
+    
+    lt_count = sum(1 for char in normalized_text if char in lt_specific)
+    ru_count = sum(1 for char in normalized_text if char in ru_specific)
+    
+    lt_markers = [
+        'labas', 'ačiū', 'prašau', 'taip', 'kaip', 'kodėl', 
+        'dirbtinis', 'intelektas', 'sveiki', 'gerai', 'mokytis',
+        'kalba', 'darbas', 'sistema', 'programa'
+    ]
+    has_lt_markers = any(marker in normalized_text for marker in lt_markers)
+    
+    ru_markers = [
+        'привет', 'спасибо', 'пожалуйста', 'как', 'почему', 
+        'искусственный', 'интеллект', 'здравствуйте', 'хорошо',
+        'учиться', 'система', 'программа', 'работа'
+    ]
+    has_ru_markers = any(marker in normalized_text for marker in ru_markers)
+
+    en_markers = ['hello', 'hi', 'thanks', 'please', 'artificial', 'intelligence', 'learn', 'system']
+    has_en_markers = any(marker in normalized_text for marker in en_markers)
+
+    if lt_count > 0 or has_lt_markers:
+        return "lt"
+    elif ru_count > 0 or has_ru_markers:
+        return "ru"
+    elif has_en_markers:
+        return "en"
+    return "en"
+
 def create_whatsapp_link(phone_number, message=""):
     base_url = "https://wa.me/"
     phone_number = str(phone_number)
@@ -66,39 +111,6 @@ def get_invitation_message(language):
 «I invite everyone to a free 20-minute personal consultation on artificial intelligence. You can register [via WhatsApp]({whatsapp_links['en']}).»"""
     }
     return invitations.get(language, invitations["en"])
-
-    normalized_text = normalize_text(text)
-    
-    lt_specific = set('ąčęėįšųūž')
-    ru_specific = set('абвгдеёжзийклмнопрстуфхцчшщъыьэюя')
-    
-    lt_count = sum(1 for char in normalized_text if char in lt_specific)
-    ru_count = sum(1 for char in normalized_text if char in ru_specific)
-    
-    lt_markers = [
-        'labas', 'ačiū', 'prašau', 'taip', 'kaip', 'kodėl', 
-        'dirbtinis', 'intelektas', 'sveiki', 'gerai', 'mokytis',
-        'kalba', 'darbas', 'sistema', 'programa'
-    ]
-    has_lt_markers = any(marker in normalized_text for marker in lt_markers)
-    
-    ru_markers = [
-        'привет', 'спасибо', 'пожалуйста', 'как', 'почему', 
-        'искусственный', 'интеллект', 'здравствуйте', 'хорошо',
-        'учиться', 'система', 'программа', 'работа'
-    ]
-    has_ru_markers = any(marker in normalized_text for marker in ru_markers)
-
-    en_markers = ['hello', 'hi', 'thanks', 'please', 'artificial', 'intelligence', 'learn', 'system']
-    has_en_markers = any(marker in normalized_text for marker in en_markers)
-
-    if lt_count > 0 or has_lt_markers:
-        return "lt"
-    elif ru_count > 0 or has_ru_markers:
-        return "ru"
-    elif has_en_markers:
-        return "en"
-    return "en"
 
 def get_ai_response(text):
     try:
