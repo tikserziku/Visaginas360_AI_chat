@@ -100,15 +100,21 @@ def get_invitation_message(language):
     invitations = {
         "ru": f"""
 
-«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. Записаться можно [через WhatsApp]({whatsapp_links['ru']}).»""",
+«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. Записаться можно [через WhatsApp]({whatsapp_links['ru']})».
+
+""",
         
         "lt": f"""
 
-«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. Užsiregistruoti galite [per WhatsApp]({whatsapp_links['lt']}).»""",
+«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. Užsiregistruoti galite [per WhatsApp]({whatsapp_links['lt']})».
+
+""",
         
         "en": f"""
 
-«I invite everyone to a free 20-minute personal consultation on artificial intelligence. You can register [via WhatsApp]({whatsapp_links['en']}).»"""
+«I invite everyone to a free 20-minute personal consultation on artificial intelligence. You can register [via WhatsApp]({whatsapp_links['en']})».
+
+"""
     }
     return invitations.get(language, invitations["en"])
 
