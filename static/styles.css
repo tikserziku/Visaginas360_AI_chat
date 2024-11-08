@@ -20,7 +20,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  background: var(--bg-color); /* Изменен с gradient на сплошной цвет */
   height: 100vh;
   width: 100%;
   position: fixed;
@@ -28,11 +28,6 @@ body {
   flex-direction: column;
   color: var(--text-color);
   overflow: hidden;
-  /* overflow: hidden;
-  overflow-y: auto;
-  
-  flex-direction: column;
-  color: var(--text-color);
 }
 
 /* Selection Styles */
@@ -70,7 +65,7 @@ body {
   flex-direction: column;
   height: calc(100vh - 200px);
   overflow-y: auto;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  background: var(--bg-color); /* Добавлен фоновый цвет */
   border-radius: var(--border-radius);
 }
 
@@ -102,7 +97,6 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   border-radius: 0 0 var(--border-radius) var(--border-radius);
 }
-
 .brand-name {
   color: var(--primary-color);
   font-size: 18px;
@@ -190,7 +184,7 @@ body {
 .menu-button {
   width: 35px;
   height: 35px;
-  padding: 15px;
+  padding: 0; /* Изменено с 15px на 0 */
   border: none;
   border-radius: 8px;
   background: rgba(0, 255, 255, 0.1);
@@ -206,9 +200,10 @@ body {
 }
 
 .menu-button img {
-  width: 100%;
-  height: 100%;
+  width: 35px; /* Фиксированная ширина */
+  height: 35px; /* Фиксированная высота */
   object-fit: contain;
+  padding: 5px; /* Добавлен внутренний отступ */
 }
 
 /* Dropdown Menu */
