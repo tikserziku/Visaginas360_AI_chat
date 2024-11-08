@@ -132,49 +132,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Speech Recognition
+    // Возвращаемся к простой версии
     function initSpeechRecognition() {
         if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
             voiceButton.style.display = 'none';
-            debugLog('Speech Recognition API is not supported');
+            console.log('Speech Recognition API is not supported');
             return false;
         }
-
-        try {
-            const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-            recognition = new SpeechRecognition();
-            
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = currentLanguage.speech;
-
-            recognition.onstart = () => {
-                debugLog('Recognition started');
-                isRecording = true;
-                startVoiceBtn.classList.add('recording');
-                voiceText.textContent = translations.voice_listening;
-            };
-
-            recognition.onresult = (event) => {
-                debugLog('Recognition result received');
-                const text = event.results[0][0].transcript;
-                if (text.trim()) {
-                    addMessage(text, true);
-                    hideVoiceModal();
-                    sendMessage(text);
-                }
-            };
-
-            recognition.onerror = handleSpeechError;
-
-            recognition.onend = () => {
-                debugLog('Recognition ended');
-                isRecording = false;
-                startVoiceBtn.classList.remove('recording');
-                voiceText.textContent = translations.voice_modal_text;
-            };
-
-            return true;
-        } catch (error) {
+    
+        const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = currentLanguage.speech;
+    
+        recognition.onstart = () => {
+            isRecording = true;
+            startVoiceBtn.classList.add('recording');
+            voiceText.textContent = translations.voice_listening;
+        };
+    
+        recognition.onresult = (event) => {
+            const text = event.results[0][0].transcript;
+            if (text.trim()) {
+                addMessage(text, true);
+                hideVoiceModal();
+                sendMessage(text);
+            }
+        };
+    
+        recognition.onerror = handleSpeechError;
+    
+        recognition.onend = () => {
+            isRecording = false;
+            startVoiceBtn.classList.remove('recording');
+            voiceText.textContent = translations.voice_modal_text;
+        };
+    
+        return true;
+    } catch (error) {
             console.error('Error initializing speech recognition:', error);
             return false;
         }
@@ -192,54 +189,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleStartVoiceClick(e) {
-        if (e?.type === 'touchstart') {
-            e.preventDefault();
-        }
-        
-        if (!recognition && !initSpeechRecognition()) {
-            voiceText.textContent = translations.voice_error;
-            return;
-        }
-        
-        try {
-            if (!isRecording) {
-                debugLog('Starting recognition with language:', currentLanguage.speech);
-                recognition.lang = currentLanguage.speech;
-                recognition.start();
-                startVoiceBtn.setAttribute('aria-pressed', 'true');
-            } else {
-                recognition.stop();
-                startVoiceBtn.setAttribute('aria-pressed', 'false');
-            }
-        } catch (error) {
-            console.error('Error in voice recognition:', error);
-            voiceText.textContent = translations.voice_error;
-            isRecording = false;
-            startVoiceBtn.classList.remove('recording');
-            startVoiceBtn.setAttribute('aria-pressed', 'false');
-        }
+    if (e?.type === 'touchstart') {
+        e.preventDefault();
     }
+    
+    if (!recognition && !initSpeechRecognition()) {
+        return;
+    }
+    
+    if (!isRecording) {
+        recognition.lang = currentLanguage.speech;
+        recognition.start();
+        startVoiceBtn.setAttribute('aria-pressed', 'true');
+    } else {
+        recognition.stop();
+        startVoiceBtn.setAttribute('aria-pressed', 'false');
+    }
+}
 
     function handleSpeechError(error) {
-        console.error('Speech recognition error:', error);
-        
-        let errorMessage;
-        switch (error.error) {
-            case 'not-allowed':
-                errorMessage = 'Microphone access denied';
-                break;
-            case 'network':
-                errorMessage = 'Network error occurred';
-                break;
-            case 'no-speech':
-                errorMessage = 'No speech was detected';
-                break;
-            case 'aborted':
-                errorMessage = 'Recording was aborted';
-                break;
-            default:
-                errorMessage = translations.voice_error;
-        }
+    console.error('Speech recognition error:', error);
+    
+    let errorMessage;
+    switch (error.error) {
+        case 'not-allowed':
+            errorMessage = 'Microphone access denied';
+            break;
+        case 'network':
+            errorMessage = 'Network error occurred';
+            break;
+        default:
+            errorMessage = translations.voice_error;
+    }
+    
+    voiceText.textContent = errorMessage;
+    isRecording = false;
+    startVoiceBtn.classList.remove('recording');
+    startVoiceBtn.setAttribute('aria-pressed', 'false');
+}
         
         debugLog('Speech error:', error.error);
         voiceText.textContent = errorMessage;
