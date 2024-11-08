@@ -7,6 +7,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import logging
 import re
+import traceback
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,13 +18,16 @@ app.secret_key = os.urandom(24)
 limiter = Limiter(
     app,
     key_func=get_remote_address,
-    default_limits=["100 per hour"]
+    default_limits=["20 per minute", "100 per hour"]
 )
 
-# Инициализация Claude API
-anthropic_client = anthropic.Anthropic(
-    api_key=os.environ.get('ANTHROPIC_API_KEY')  # Исправлено имя переменной
-)
+try:
+    anthropic_client = anthropic.Anthropic(
+        api_key=os.environ.get('ANTHROPIC_API_KEY')
+    )
+except Exception as e:
+    logger.exception(f"Error initializing Anthropic client: {e}")
+    anthropic_client = None
 
 def get_invitation_message(language):
     url = "https://spiecius.inovacijuagentura.lt/office/visagine/"
@@ -46,9 +50,7 @@ def normalize_text(text):
     """Нормализует текст, удаляя специальные символы и лишние пробелы"""
     if not text:
         return ""
-    # Удаляем специальные символы, оставляя буквы, цифры и пробелы
     text = re.sub(r'[^\w\s\u0400-\u04FF\u0100-\u017F]', ' ', text)
-    # Заменяем множественные пробелы на один
     text = re.sub(r'\s+', ' ', text)
     return text.strip().lower()
 
@@ -56,18 +58,14 @@ def detect_language(text):
     if not text:
         return "en"
 
-    # Нормализуем текст
     normalized_text = normalize_text(text)
     
-    # Расширенные наборы символов для каждого языка
     lt_specific = set('ąčęėįšųūž')
     ru_specific = set('абвгдеёжзийклмнопрстуфхцчшщъыьэюя')
     
-    # Подсчитываем количество специфичных символов для каждого языка
     lt_count = sum(1 for char in normalized_text if char in lt_specific)
     ru_count = sum(1 for char in normalized_text if char in ru_specific)
     
-    # Расширенный список литовских слов-маркеров
     lt_markers = [
         'labas', 'ačiū', 'prašau', 'taip', 'kaip', 'kodėl', 
         'dirbtinis', 'intelektas', 'sveiki', 'gerai', 'mokytis',
@@ -75,7 +73,6 @@ def detect_language(text):
     ]
     has_lt_markers = any(marker in normalized_text for marker in lt_markers)
     
-    # Расширенный список русских слов-маркеров
     ru_markers = [
         'привет', 'спасибо', 'пожалуйста', 'как', 'почему', 
         'искусственный', 'интеллект', 'здравствуйте', 'хорошо',
@@ -83,25 +80,22 @@ def detect_language(text):
     ]
     has_ru_markers = any(marker in normalized_text for marker in ru_markers)
 
-    # Проверяем английские слова-маркеры
     en_markers = ['hello', 'hi', 'thanks', 'please', 'artificial', 'intelligence', 'learn', 'system']
     has_en_markers = any(marker in normalized_text for marker in en_markers)
 
-    # Улучшенное определение языка
     if lt_count > 0 or has_lt_markers:
         return "lt"
     elif ru_count > 0 or has_ru_markers:
         return "ru"
     elif has_en_markers:
         return "en"
-    return "en"  # Default to English
+    return "en"
 
 def get_ai_response(text):
     try:
         detected_language = detect_language(text)
         logger.info(f"Detected language: {detected_language} for text: {text[:50]}...")
 
-        # Языково-специфичные системные промпты
         system_prompts = {
             "lt": """You are an AI assistant helping beginners learn about artificial intelligence.
             ALWAYS RESPOND IN LITHUANIAN, regardless of the input language.
@@ -158,12 +152,11 @@ def get_ai_response(text):
         )
         response = message.content[0].text
         
-        # Добавляем приглашение на соответствующем языке
         invitation = get_invitation_message(detected_language)
         
         return response + invitation
     except Exception as e:
-        logger.error(f"Error in get_ai_response: {str(e)}")
+        logger.exception(f"Error in get_ai_response: {str(e)}")
         error_messages = {
             "ru": "Извините, произошла ошибка. Пожалуйста, попробуйте еще раз.",
             "lt": "Atsiprašome, įvyko klaida. Prašome bandyti dar kartą.",
@@ -173,7 +166,6 @@ def get_ai_response(text):
 
 @app.route('/')
 def index():
-    """Главная страница"""
     try:
         return render_template('index.html', year=datetime.now().year)
     except Exception as e:
@@ -183,43 +175,40 @@ def index():
 @app.route('/chat', methods=['POST'])
 @limiter.limit("5 per minute")
 def chat():
-    """Обработка текстовых сообщений"""
     try:
         message = request.json.get('message', '').strip()
-        logger.info(f"Received chat message: {message[:50]}...")
-        
         if not message:
-            return jsonify({'error': 'Empty message'}), 400
+            return jsonify({'reply': 'Пожалуйста, введите сообщение.'})
+
+        if anthropic_client is None:
+            return jsonify({'error': 'Сервис временно недоступен.'}), 503
 
         response = get_ai_response(message)
         save_conversation(message, response)
-        
         return jsonify({'reply': response})
     except Exception as e:
-        logger.error(f"Error in chat endpoint: {str(e)}")
-        return jsonify({'error': 'Service temporarily unavailable'}), 503
+        logger.exception(f"Error in chat endpoint: {e}")
+        return jsonify({'error': 'Сервис временно недоступен.'}), 503
 
 @app.route('/process_voice', methods=['POST'])
 @limiter.limit("5 per minute")
 def process_voice():
-    """Обработка голосовых сообщений"""
     try:
         voice_input = request.json.get('voice_input', '').strip()
-        logger.info(f"Received voice input: {voice_input[:50]}...")
-        
         if not voice_input:
-            return jsonify({'error': 'Empty voice input'}), 400
+            return jsonify({'processed_text': 'Пожалуйста, произнесите сообщение.'}), 200
+
+        if anthropic_client is None:
+            return jsonify({'error': 'Сервис временно недоступен.'}), 503
 
         response = get_ai_response(voice_input)
         save_conversation(voice_input, response, is_voice=True)
-        
         return jsonify({'processed_text': response})
     except Exception as e:
-        logger.error(f"Error in process_voice endpoint: {str(e)}")
-        return jsonify({'error': 'Service temporarily unavailable'}), 503
+        logger.exception(f"Error in process_voice endpoint: {e}")
+        return jsonify({'error': 'Сервис временно недоступен.'}), 503
 
 def save_conversation(user_message, bot_response, is_voice=False):
-    """Сохранение разговора в файл"""
     try:
         conversation = {
             'timestamp': datetime.now().isoformat(),
