@@ -67,7 +67,7 @@ body {
   flex-direction: column;
   min-height: calc(100vh - 60px - env(safe-area-inset-bottom)); /* Высота с учетом navbar и safe area */
   overflow: hidden;
-  padding-bottom: 100px; /* Или другое значение по необходимости */
+  padding-bottom: env(safe-area-inset-bottom); /* Отступ снизу равен безопасному отступу */
 }
 
 #chat-messages {
@@ -116,7 +116,8 @@ body {
   border-radius: var(--border-radius);
   box-shadow: var(--neon-shadow);
   border: 1px solid rgba(0, 255, 255, 0.1);
-  margin-top: auto;  /* Push to bottom of container */
+  /* margin-top: auto;  /* Push to bottom of container */
+  padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Отступ снизу для input-container с учетом безопасной области */
 }
 
 
