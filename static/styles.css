@@ -26,7 +26,8 @@ body {
   height: 100vh;
   width: 100%;
   position: fixed;
-  overflow: hidden;
+  /* overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   color: var(--text-color);
@@ -66,8 +67,8 @@ body {
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 60px - env(safe-area-inset-bottom)); /* Высота с учетом navbar и safe area */
-  /* overflow: hidden;
-  overflow-y: auto;
+  overflow: hidden;
+  /* overflow-y: auto;
   padding-bottom: env(safe-area-inset-bottom); /* Отступ снизу равен безопасному отступу */
 }
 
