@@ -239,36 +239,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Language and translations handling
     async function loadTranslations(lang = 'lt') {
-        const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
+    const url = `/static/locales/translations${lang !== 'ru' ? '_' + lang : ''}.json`;
 
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
-            }
-            translations = await response.json();
-            debugLog('Translations loaded for language:', lang);
-        } catch (error) {
-            console.error('Error loading translations:', error);
-            translations = {
-                "placeholder": "Type your message...",
-                "send": "Send",
-                "voice_modal_text": "Click to speak",
-                "voice_listening": "Listening...",
-                "voice_error": "Error. Please try again.",
-                "loading": "Processing...",
-                "welcome_message": "Hello! I am your virtual assistant for learning about artificial intelligence. How can I help you today?",
-                "error_message": "An error occurred. Please try again.",
-                "about": "About",
-                "settings": "Settings",
-                "help": "Help",
-                "brand_name": "VISAGINAS360 AI"
-            };
-        } finally {
-            updateInterfaceLanguage();
-            document.documentElement.lang = lang;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch translations: ${response.status} ${response.statusText}`);
         }
+        translations = await response.json();
+        debugLog('Translations loaded for language:', lang);
+        return translations;
+    } catch (error) {
+        console.error('Error loading translations:', error);
+        translations = {
+            "placeholder": "Type your message...",
+            "send": "Send",
+            "voice_modal_text": "Click to speak",
+            "voice_listening": "Listening...",
+            "voice_error": "Error. Please try again.",
+            "loading": "Processing...",
+            "welcome_message": "Hello! I am your virtual assistant for learning about artificial intelligence. How can I help you today?",
+            "error_message": "An error occurred. Please try again.",
+            "about": "About",
+            "settings": "Settings",
+            "help": "Help",
+            "brand_name": "VISAGINAS360 AI"
+        };
+        return translations;
     }
+}
 
     function updateInterfaceLanguage() {
         messageInput.placeholder = translations.placeholder;
