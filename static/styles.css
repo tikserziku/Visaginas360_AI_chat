@@ -80,6 +80,46 @@ body {
   margin-bottom: 60px; /* Увеличить отступ */
   border: 1px solid rgba(0, 255, 255, 0.1);
 }
+/* Добавьте новый стиль для приглашения */
+.invitation-message {
+  background: linear-gradient(45deg, #1a1a4a, #2d1a3a);
+  border: 1px solid var(--primary-color);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+  position: relative;
+}
+
+.invitation-message::before {
+  content: '🎁';  /* или другой подходящий эмодзи */
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  background: var(--bg-color);
+  padding: 5px;
+  border-radius: 50%;
+  font-size: 20px;
+}
+
+.invitation-message a {
+  color: var(--primary-color);
+  font-weight: bold;
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid var(--primary-color);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.invitation-message a:hover {
+  background: var(--primary-color);
+  color: var(--bg-color);
+}
+
+
+
+
 /* Navigation */
 .navbar {
   position: fixed;
