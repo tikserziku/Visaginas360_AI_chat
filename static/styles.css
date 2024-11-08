@@ -60,7 +60,7 @@ body {
 
 /* Chat Container */
 .chat-container {
-  max-width: 800px;
+  max-width: 600px;
   margin: 60px auto 0;
   padding: 20px;
   height: calc(100vh - 80px); /* Adjusted height for iOS fix later */
@@ -159,7 +159,7 @@ body {
 .input-button,
 .language-button {
   width: 40px;
-  height: 40px;
+  height: calc(100vh - 140px);
   border: none;
   border-radius: 50%;
   cursor: pointer;
@@ -196,7 +196,7 @@ body {
 .menu-button {
   width: 35px;
   height: 35px;
-  padding: 5px;
+  padding: 15px;
   border: none;
   border-radius: 8px;
   background: rgba(0, 255, 255, 0.1);
