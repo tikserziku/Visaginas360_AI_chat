@@ -8,6 +8,7 @@ from flask_limiter.util import get_remote_address
 import logging
 import re
 import traceback
+import urllib.parse
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -29,34 +30,42 @@ except Exception as e:
     logger.exception(f"Error initializing Anthropic client: {e}")
     anthropic_client = None
 
+def create_whatsapp_link(phone_number, message=""):
+    base_url = "https://wa.me/"
+    phone_number = str(phone_number)
+    if message:
+        encoded_message = urllib.parse.quote(message)
+        return f"{base_url}{phone_number}?text={encoded_message}"
+    return f"{base_url}{phone_number}"
+
 def get_invitation_message(language):
-    url = "https://spiecius.inovacijuagentura.lt/office/visagine/"
+    phone_number = "37067618335"
+    
+    messages = {
+        "ru": "Здравствуйте, я хочу записаться на консультацию.",
+        "lt": "Sveiki, norėčiau užsiregistruoti konsultacijai.",
+        "en": "Hello, I would like to schedule a consultation."
+    }
+    
+    whatsapp_links = {
+        lang: create_whatsapp_link(phone_number, msg) 
+        for lang, msg in messages.items()
+    }
+    
     invitations = {
         "ru": f"""
 
-«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. А в эту пятницу, 8 ноября, пройдет урок по искусственному интеллекту в Висагинасе в Инкубаторе ([Подробнее здесь]({url})).»""",
+«Я всех приглашаю на личную консультацию по искусственному интеллекту на бесплатные 20 минут. Записаться можно [через WhatsApp]({whatsapp_links['ru']}).»""",
         
         "lt": f"""
 
-«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. O šį penktadienį, lapkričio 8 d., Visagino inkubatoriuje vyks dirbtinio intelekto pamoka ([Sužinoti daugiau]({url})).»""",
+«Kviečiu visus į nemokamą 20 minučių asmeninę konsultaciją apie dirbtinį intelektą. Užsiregistruoti galite [per WhatsApp]({whatsapp_links['lt']}).»""",
         
         "en": f"""
 
-«I invite everyone to a free 20-minute personal consultation on artificial intelligence. And this Friday, November 8, there will be an artificial intelligence lesson at the Visaginas Incubator ([Learn more]({url})).»"""
+«I invite everyone to a free 20-minute personal consultation on artificial intelligence. You can register [via WhatsApp]({whatsapp_links['en']}).»"""
     }
     return invitations.get(language, invitations["en"])
-
-def normalize_text(text):
-    """Нормализует текст, удаляя специальные символы и лишние пробелы"""
-    if not text:
-        return ""
-    text = re.sub(r'[^\w\s\u0400-\u04FF\u0100-\u017F]', ' ', text)
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip().lower()
-
-def detect_language(text):
-    if not text:
-        return "en"
 
     normalized_text = normalize_text(text)
     
