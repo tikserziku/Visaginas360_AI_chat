@@ -116,6 +116,35 @@ body {
   background: var(--primary-color);
   color: var(--bg-color);
 }
+.gift-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(to right, #1a1a4a, #2d1a3a);
+  padding: 15px 20px;
+  border-radius: 30px;
+  margin: 20px 0;
+  position: relative;
+  border: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+.gift-icon {
+  font-size: 24px;
+  min-width: 24px;
+}
+
+.gift-message a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.gift-message a:hover {
+  text-shadow: 0 0 8px var(--primary-color);
+}
+
+
 
 
 
