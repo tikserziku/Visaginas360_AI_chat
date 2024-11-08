@@ -87,13 +87,13 @@ def get_invitation_message(language):
     phone_number = "37067618335"
     
     messages = {
-        "ru": "Здравствуйте, я хочу записаться на консультацию",
-        "lt": "Sveiki, norėčiau užsiregistruoti konsultacijai",
-        "en": "Hello, I would like to schedule a consultation"
+        "ru": "Запись_на_консультацию",
+        "lt": "Registracija_konsultacijai",
+        "en": "Book_consultation"
     }
     
     whatsapp_links = {
-        lang: f"https://wa.me/{phone_number}?text={urllib.parse.quote(msg)}"
+        lang: f"https://wa.me/{phone_number}?text={msg}" 
         for lang, msg in messages.items()
     }
     
@@ -111,7 +111,6 @@ def get_invitation_message(language):
 «I invite everyone to a free 20-minute personal consultation on artificial intelligence. You can register [via WhatsApp]({whatsapp_links['en']})»"""
     }
     return invitations.get(language, invitations["en"])
-
 def get_ai_response(text):
     try:
         detected_language = detect_language(text)
