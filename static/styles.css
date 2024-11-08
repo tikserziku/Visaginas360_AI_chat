@@ -68,8 +68,8 @@ body {
   flex-direction: column;
   min-height: calc(100vh - 60px - env(safe-area-inset-bottom)); /* Высота с учетом navbar и safe area */
   overflow: hidden;
-  /* overflow-y: auto;
-  padding-bottom: env(safe-area-inset-bottom); /* Отступ снизу равен безопасному отступу */
+  overflow-y: auto;
+  padding-bottom: 70px; /* Добавьте отступ снизу, равный высоте input-container + небольшой запас */
 }
 
 #chat-messages {
