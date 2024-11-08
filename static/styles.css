@@ -5,8 +5,6 @@
   --text-color: #ffffff;
   --bg-color: #0a0a1a;
   --chat-bg: #141428;
-  --user-message-bg: rgba(0, 255, 255, 0.1);
-  --bot-message-bg: rgba(255, 0, 255, 0.1);
   --border-radius: 20px;
   --neon-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
   --gradient-start: #0a0a1a;
@@ -255,22 +253,19 @@ body {
   border-radius: 15px;
   word-wrap: break-word;
   color: var(--text-color);
-  backdrop-filter: blur(5px);
-  white-space: pre-line; /* Handles preformatted text and newlines */
   line-height: 1.5;
   animation: messageSlideIn 0.3s ease forwards;
 }
 
+
 .user-message {
-  background: var(--user-message-bg);
+  background: #1a1a3a; /* Сплошной цвет фона для сообщений пользователя */
   margin-left: auto; /* Align right */
-  border: 1px solid rgba(0, 255, 255, 0.2);
 }
 
 .bot-message {
-  background: var(--bot-message-bg);
+  background: #2d1a3a; /* Сплошной цвет фона для сообщений бота */
   margin-right: auto; /* Align left */
-  border: 1px solid rgba(255, 0, 255, 0.2);
 }
 
 
