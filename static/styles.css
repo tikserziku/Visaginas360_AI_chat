@@ -64,7 +64,7 @@ body {
   margin: 60px auto 0;
   padding: 20px;
   height: calc(100vh - 80px); /* Adjusted height for iOS fix later */
-  display: flex;
+  display: flow;
   flex-direction: column;
   min-height: calc(100vh - 60px - env(safe-area-inset-bottom)); /* Высота с учетом navbar и safe area */
   overflow: hidden;
