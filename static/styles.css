@@ -135,7 +135,9 @@ body {
   /* margin-top: auto;  /* Push to bottom of container */
   /* padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Отступ снизу для input-container с учетом безопасной области */
 }
-
+#lang-toggle, #voice-button, #send-button {
+    flex-basis: 40px; /* Или width: 40px; */
+}
 
 #message-input {
   flex-grow: 1;
