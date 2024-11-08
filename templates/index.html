@@ -28,7 +28,7 @@
     <main class="chat-container" role="main">
         <div id="chat-messages" role="log" aria-live="polite" aria-atomic="false"></div>
 
-        <div class="input-container">  <!-- Только один блок input-container -->
+        <div class="input-container">
             <button id="lang-toggle" class="input-button language-button" aria-label="Change language">
                 <span>LT</span>
             </button>
@@ -36,16 +36,16 @@
                 <span aria-hidden="true">🎤</span>
             </button>
             <input type="text" 
-                   id="message-input" 
-                   placeholder="Type your message..." 
-                   aria-label="Message input"
-                   autocomplete="off"
-                   enterkeyhint="send">
+               id="message-input" 
+               placeholder="Type your message..." 
+               aria-label="Message input"
+               autocomplete="off"
+               enterkeyhint="send">
             <button id="send-button" class="input-button" aria-label="Send message">
                 <span aria-hidden="true">📤</span>
             </button>
-        </div>  </main>
-
+        </div>
+    </main>
 
     <div id="voice-modal" class="modal" role="dialog" aria-label="Voice input" aria-modal="true" hidden>
         <div class="modal-content voice-compact">
