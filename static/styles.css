@@ -111,6 +111,10 @@ body {
 
 /* Input Area */
 .input-container {
+  position: fixed;
+  bottom: 0; /* Прикрепляем к нижнему краю */
+  left: 0;  /* Растягиваем на всю ширину */
+  width: 100%;
   display: flex;
   gap: 10px;
   padding: 10px;
@@ -118,8 +122,18 @@ body {
   border-radius: var(--border-radius);
   box-shadow: var(--neon-shadow);
   border: 1px solid rgba(0, 255, 255, 0.1);
+  margin-top: auto;  /* Push to bottom of container */
+  z-index: 101; /* Убедитесь, что z-index выше других элементов */
+  padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Безопасный отступ снизу */
+  /* display: flex;
+  /* gap: 10px;
+  /* padding: 10px;
+  /* background: rgba(20, 20, 40, 0.5);
+  /* border-radius: var(--border-radius);
+  /* box-shadow: var(--neon-shadow);
+  /* border: 1px solid rgba(0, 255, 255, 0.1);
   /* margin-top: auto;  /* Push to bottom of container */
-  padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Отступ снизу для input-container с учетом безопасной области */
+  /* padding-bottom: max(10px, env(safe-area-inset-bottom)); /* Отступ снизу для input-container с учетом безопасной области */
 }
 
 
